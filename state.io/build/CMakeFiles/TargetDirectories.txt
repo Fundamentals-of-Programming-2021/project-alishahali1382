@@ -1,0 +1,3 @@
+/home/alishahali/Desktop/project-alishahali1382/state.io/build/CMakeFiles/edit_cache.dir
+/home/alishahali/Desktop/project-alishahali1382/state.io/build/CMakeFiles/rebuild_cache.dir
+/home/alishahali/Desktop/project-alishahali1382/state.io/build/CMakeFiles/state.dir

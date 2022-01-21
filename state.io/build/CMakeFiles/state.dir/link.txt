@@ -1,0 +1,1 @@
+/bin/x86_64-linux-gnu-gcc-10 -g -rdynamic CMakeFiles/state.dir/src/main.c.o -o state  -lm -lSDL2 -lSDL2_gfx 

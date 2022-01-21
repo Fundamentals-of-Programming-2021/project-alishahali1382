@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/alishahali/Desktop/project-alishahali1382/state.io/build",
+  "command": "/bin/x86_64-linux-gnu-gcc-10  -I/usr/include/SDL2 -g -std=gnu99 -o CMakeFiles/state.dir/src/main.c.o -c /home/alishahali/Desktop/project-alishahali1382/state.io/src/main.c",
+  "file": "/home/alishahali/Desktop/project-alishahali1382/state.io/src/main.c"
+}
+]

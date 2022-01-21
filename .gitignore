@@ -1,3 +1,4 @@
 *.exe
 *.out
-*/CMakeCache.txt
+state.io/CMakeCache.txt
+state.io/cmake_install.cmake
