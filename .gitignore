@@ -2,3 +2,4 @@
 *.out
 state.io/CMakeCache.txt
 state.io/cmake_install.cmake
+state.io/state

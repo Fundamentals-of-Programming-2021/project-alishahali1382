@@ -1,3 +1,3 @@
-/home/alishahali/Desktop/Project-Base/state.io/CMakeFiles/edit_cache.dir
-/home/alishahali/Desktop/Project-Base/state.io/CMakeFiles/rebuild_cache.dir
-/home/alishahali/Desktop/Project-Base/state.io/CMakeFiles/state.dir
+/home/alishahali/Desktop/project-alishahali1382/state.io/CMakeFiles/edit_cache.dir
+/home/alishahali/Desktop/project-alishahali1382/state.io/CMakeFiles/rebuild_cache.dir
+/home/alishahali/Desktop/project-alishahali1382/state.io/CMakeFiles/state.dir

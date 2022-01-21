@@ -186,6 +186,12 @@ CMAKE_STRIP:FILEPATH=/bin/x86_64-linux-gnu-strip
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
 //Value Computed by CMake
+game_BINARY_DIR:STATIC=/home/alishahali/Desktop/project-alishahali1382/state.io/build
+
+//Value Computed by CMake
+game_SOURCE_DIR:STATIC=/home/alishahali/Desktop/project-alishahali1382/state.io
+
+//Value Computed by CMake
 state_BINARY_DIR:STATIC=/home/alishahali/Desktop/project-alishahali1382/state.io/build
 
 //Value Computed by CMake

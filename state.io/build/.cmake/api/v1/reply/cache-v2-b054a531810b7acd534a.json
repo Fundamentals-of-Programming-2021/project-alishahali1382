@@ -1002,6 +1002,30 @@
 			"value" : "FALSE"
 		},
 		{
+			"name" : "game_BINARY_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/alishahali/Desktop/project-alishahali1382/state.io/build"
+		},
+		{
+			"name" : "game_SOURCE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/alishahali/Desktop/project-alishahali1382/state.io"
+		},
+		{
 			"name" : "state_BINARY_DIR",
 			"properties" : 
 			[

@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/home/alishahali/Desktop/project-alishahali1382/state.io/src/main.c" "/home/alishahali/Desktop/project-alishahali1382/state.io/CMakeFiles/state.dir/src/main.c.o"
+  "/home/alishahali/Desktop/project-alishahali1382/state.io/src/main.c" "/home/alishahali/Desktop/project-alishahali1382/state.io/build/CMakeFiles/game.dir/src/main.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 
