@@ -5,14 +5,12 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 
-typedef long long ll;
 #define Width 800
 #define Height 600
 const double FPS = 30;
 const int MinStates=6, MaxStates=30;
 const int MinPlayers=2, MaxPlayers=6;
 const int MinStateDistance=70; // maybe change it?
-const int BorderLine=2; // the thickness of the lines seperating states
 
 // here are some shit functions C doesnt have :)
 int swap(int *x, int *y){ *x^=*y, *y^=*x, *x^=*y;}
@@ -76,11 +74,11 @@ SDL_Texture* MakeBackGround(SDL_Renderer *renderer, struct State *states){
 	for (int i=0; i<n; i++) color[i]=0xff000000+rand()%01000000;
 	color[n]=0xffdfb320;
 	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++){
-		if (x<BorderLine || y<BorderLine || Width-BorderLine<=x || Height-BorderLine<=y)
+		if (x<=0 || y<=0 || Width-1<=x || Height-1<=y)
 			pixelColor(renderer, x, y, 0xff000000);
 		else{
 			int f=0;
-			for (int i=-BorderLine; i<=BorderLine; i++) for (int j=-BorderLine; j<=BorderLine; j++){
+			for (int i=-1; i<=1; i++) for (int j=-1; j<=1; j++){
 				if (A[x+i][y+j]==A[x][y]) continue ;
 				f=1;
 				// maybe use different condition here?
@@ -92,20 +90,8 @@ SDL_Texture* MakeBackGround(SDL_Renderer *renderer, struct State *states){
 	free(color); // free-ed 60 bytes :))
 
 
-	ll sumx[n], sumy[n], ted[n];
-	memset(sumx, 0, sizeof(sumx));
-	memset(sumy, 0, sizeof(sumy));
-	memset(ted, 0, sizeof(ted));
-	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++) if (A[x][y]<n){
-		sumx[A[x][y]]+=x;
-		sumy[A[x][y]]+=y;
-		ted[A[x][y]]++;
-	}
-
-	for (int i=0; i<n; i++){
-		states[i].x=sumx[i]/ted[i];
-		states[i].y=sumy[i]/ted[i];
-		filledCircleColor(renderer, states[i].x, states[i].y, 15, 0xfff6f750);
+	for (int i=0; i<nn; i++){
+		filledCircleColor(renderer, states[i].x, states[i].y, 15, 0xff00ff00);
 		// printf("circle %d is at position (%d, %d)\n", i, states[i].x, states[i].y);
 	}
 
