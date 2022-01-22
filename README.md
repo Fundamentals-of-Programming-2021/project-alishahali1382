@@ -4,5 +4,5 @@ ID: 400109905
 ```
 
 to build the game:
-- ```./build.sh```
+```./build.sh```
 
