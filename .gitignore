@@ -5,3 +5,4 @@ state.io/cmake_install.cmake
 state.io/CMakeFiles
 state.io/MakeFile
 state.io/state
+state.io/.vscode
