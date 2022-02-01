@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 
@@ -12,9 +13,8 @@ const double FPS = 30;
 const int MinStates=6, MaxStates=30;
 const int MinPlayers=2, MaxPlayers=6;
 const int MinStateDistance=70; // maybe change it?
-const int BorderLine=2; // the thickness of the lines seperating states
+const int BorderLineWidth=2; // the thickness of the lines seperating states
 
-// here are some shit functions C doesnt have :)
 int swap(int *x, int *y){ *x^=*y, *y^=*x, *x^=*y;}
 int min(int x, int y){ return (x<y?x:y);}
 int max(int x, int y){ return (x>y?x:y);}
@@ -27,12 +27,19 @@ int distance2(int x, int y, int xx, int yy){ // squared distance
 	int dx=x-xx, dy=y-yy;
 	return dx*dx+dy*dy;
 }
+void error(char *error_message){
+	FILE *f=fopen("error-log.txt", "w+");
+	fprintf(f, "%s\n", error_message);
+	fclose(f);
+	exit(1);
+}
+int rgb_to_int(int r, int g, int b){ return 0xff000000+(b<<16)+(g<<8)+(r);}
 
 
 int n, m, nn; // n: number of states    m: number of players    nn: n+"number of shit states"
 struct State{
 	int x, y; // center position
-
+	int owner;
 };
 
 int distance_state(struct State *A, struct State *B){ // squared distance
@@ -51,14 +58,65 @@ void GenerateRandomMap(struct State *states){ // uses global variable nn
 		if (bad) i--;
 	}
 }
-int A[Width][Height]; // global array needed for making background
-SDL_Texture* MakeBackGround(SDL_Renderer *renderer, struct State *states){
-	SDL_Texture *texture=SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, Width, Height);
-	SDL_SetRenderTarget(renderer, texture);
 
-	// SDL_SetRenderDrawColor(renderer, 120, 60, 80, 255);
-	// SDL_RenderClear(renderer);
+struct ColorMixer{
+	int blank, empty_state, border_line;
+	int *minC, *maxC;
+};
+int getpartialcolor(struct ColorMixer *colormixer, int player, double frac){
+	if (!player) return colormixer->empty_state;
+	if (frac>1) frac=1;
+	return colormixer->minC[player]*(1-frac)+colormixer->maxC[player]*frac; // note: maybe handle alpha manually?
+}
+
+struct ColorMixer* ReadColorConfig(char *filename){
+	FILE *f=fopen(filename, "r");
+	if (f==NULL) error("color config file not found :(");
 	
+	struct ColorMixer *res=(struct ColorMixer *)(malloc(sizeof(struct ColorMixer)));
+	res->minC=(int*)(malloc(sizeof(int)*(MaxPlayers+1)));
+	res->maxC=(int*)(malloc(sizeof(int)*(MaxPlayers+1)));
+	
+	// memory leak doesn't matter here since its called only once
+	char S[50];
+	int r, g, b;
+	int tmp=fscanf(f, "%s %d,%d,%d", S, &r, &g, &b);
+	if (tmp<4 || strcmp(S, "blank:")) error("color-config file invalid line 1 blank");
+	res->blank=rgb_to_int(r, g, b);
+
+	tmp=fscanf(f, "%s %d,%d,%d", S, &r, &g, &b);
+	if (tmp<4 || strcmp(S, "border-line:")) error("color-config file invalid line 2 border-line");
+	res->border_line=rgb_to_int(r, g, b);
+	
+	tmp=fscanf(f, "%s %d,%d,%d", S, &r, &g, &b);
+	if (tmp<4 || strcmp(S, "empty-state:")) error("color-config file invalid line 3 empty-state");
+	res->empty_state=rgb_to_int(r, g, b);
+
+	char Smin[]="player0-min:", Smax[]="player0-max:", error_message[]="color-config file invalid player 0 color";
+	for (int player=1; player<=MaxPlayers; player++){
+		// MaxPlayers<=9
+		Smin[6]++;
+		Smax[6]++;
+		error_message[33]++;
+		
+		tmp=fscanf(f, "%s %d,%d,%d", S, &r, &g, &b);
+		if (tmp<4 || strcmp(S, Smin)) error(error_message);
+		res->minC[player]=rgb_to_int(r, g, b);
+		
+		tmp=fscanf(f, "%s %d,%d,%d", S, &r, &g, &b);
+		if (tmp<4 || strcmp(S, Smax)) error(error_message);
+		res->maxC[player]=rgb_to_int(r, g, b);
+	}
+	fclose(f);
+	return res;
+}
+
+// A[x][y]=-1   : its a border line
+// 0<=A[x][y]<n : its a state
+// A[x][y]=n    : its a non-playing field
+int A[Width][Height], B[Width][Height]; // global array needed for making background
+void PrepareMap(struct State *states){
+	if (!n) error("PrepareMap called with n=0");
 	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++){
 		int bst=-1, val=1e9;
 		for (int i=0; i<nn; i++){
@@ -69,49 +127,57 @@ SDL_Texture* MakeBackGround(SDL_Renderer *renderer, struct State *states){
 			}
 		}
 		assert(bst!=-1);
-		A[x][y]=min(n, bst);
+		B[x][y]=min(n, bst);
 	}
-	
-	int *color=(int *) malloc((n+1)*sizeof(int));
-	for (int i=0; i<n; i++) color[i]=0xff000000+rand()%01000000;
-	color[n]=0xffdfb320;
 	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++){
-		if (x<BorderLine || y<BorderLine || Width-BorderLine<=x || Height-BorderLine<=y)
-			pixelColor(renderer, x, y, 0xff000000);
+		if (x<BorderLineWidth || y<BorderLineWidth || Width-BorderLineWidth<=x || Height-BorderLineWidth<=y)
+			A[x][y]=-1;
 		else{
-			int f=0;
-			for (int i=-BorderLine; i<=BorderLine; i++) for (int j=-BorderLine; j<=BorderLine; j++){
-				if (A[x+i][y+j]==A[x][y]) continue ;
-				f=1;
+			A[x][y]=B[x][y];
+			for (int i=-BorderLineWidth; i<=BorderLineWidth; i++) for (int j=-BorderLineWidth; j<=BorderLineWidth; j++){
+				if (B[x+i][y+j]==B[x][y]) continue ;
+				A[x][y]=-1;
 				// maybe use different condition here?
 			}
-			if (f) pixelColor(renderer, x, y, 0xff000000);
-			else pixelColor(renderer, x, y, color[A[x][y]]);
 		}
 	}
-	free(color); // free-ed 60 bytes :))
-
-
 	ll sumx[n], sumy[n], ted[n];
 	memset(sumx, 0, sizeof(sumx));
 	memset(sumy, 0, sizeof(sumy));
 	memset(ted, 0, sizeof(ted));
-	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++) if (A[x][y]<n){
+	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++) if (0<=A[x][y] && A[x][y]<n){
 		sumx[A[x][y]]+=x;
 		sumy[A[x][y]]+=y;
 		ted[A[x][y]]++;
 	}
-
 	for (int i=0; i<n; i++){
+		// assert(ted[i]);
 		states[i].x=sumx[i]/ted[i];
 		states[i].y=sumy[i]/ted[i];
-		filledCircleColor(renderer, states[i].x, states[i].y, 15, 0xfff6f750);
-		// printf("circle %d is at position (%d, %d)\n", i, states[i].x, states[i].y);
 	}
+}
 
+SDL_Texture* MakeBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer){
+	// it makes a texture that corresponds to background.
+	// the main point is optimizing the renderings and dont create a background at each frame
+	// a new backgroung should be created every time a cells owner changes.
+	// if partial-color is used, the process is mostly point-less
+	
+	SDL_Texture *texture=SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, Width, Height);
+	SDL_SetRenderTarget(renderer, texture);
+	
+	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++){
+		if (A[x][y]==-1) pixelColor(renderer, x, y, colormixer->border_line);
+		else if (A[x][y]==n) pixelColor(renderer, x, y, colormixer->blank);
+		else pixelColor(renderer, x, y, getpartialcolor(colormixer, 1, 1)); // to be edited later
+	}
+	for (int i=0; i<n; i++) filledCircleColor(renderer, states[i].x, states[i].y, 15, 0xffd8f780);
+	
 	SDL_SetRenderTarget(renderer, 0);
 	return texture;
 }
+
+
 const int EXIT = -1;
 int handleEvents(){
 	SDL_Event event;
@@ -124,20 +190,21 @@ int handleEvents(){
 
 int main(){
 	srand(time(0));
+	struct ColorMixer *colormixer = ReadColorConfig("assets/color-config.txt");
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_Window* window = SDL_CreateWindow("map generator", 20, 20, Width, Height, SDL_WINDOW_OPENGL);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	
-
 	n=10;
-	nn=15;
+	nn=20;
 	m=2;
 	struct State *states=(struct State *)malloc(nn*sizeof(struct State));
 	GenerateRandomMap(states);
+	PrepareMap(states);
+	// printf("prepared map\n");
 
 
-
-	SDL_Texture *background=MakeBackGround(renderer, states);
+	SDL_Texture *background=MakeBackGround(renderer, states, colormixer);
 
 	int begining_of_time = SDL_GetTicks();
 	while (1) {
