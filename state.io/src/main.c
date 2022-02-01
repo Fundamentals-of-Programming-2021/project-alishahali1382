@@ -10,10 +10,12 @@ typedef long long ll;
 #define Width 800
 #define Height 600
 const double FPS = 30;
-const int MinStates=6, MaxStates=30;
-const int MinPlayers=2, MaxPlayers=6;
 const int MinStateDistance=70; // maybe change it?
 const int BorderLineWidth=2; // the thickness of the lines seperating states
+const int MinStates=6, MaxStates=30;
+const int MinPlayers=2, MaxPlayers=6;
+const int InitialSoldierCount=10; // number of soldiers of eash state when the game begins
+const int MaxSoldierCount=50; // number of soldiers of eash state when the game begins
 
 int swap(int *x, int *y){ *x^=*y, *y^=*x, *x^=*y;}
 int min(int x, int y){ return (x<y?x:y);}
@@ -39,7 +41,7 @@ int rgb_to_int(int r, int g, int b){ return 0xff000000+(b<<16)+(g<<8)+(r);}
 int n, m, nn; // n: number of states    m: number of players    nn: n+"number of shit states"
 struct State{
 	int x, y; // center position
-	int owner;
+	int owner, cnt; // cnt: number of soldiers
 };
 
 int distance_state(struct State *A, struct State *B){ // squared distance
@@ -59,14 +61,26 @@ void GenerateRandomMap(struct State *states){ // uses global variable nn
 	}
 }
 
+int SHIT=0;
+
 struct ColorMixer{
 	int blank, empty_state, border_line;
 	int *minC, *maxC;
 };
-int getpartialcolor(struct ColorMixer *colormixer, int player, double frac){
-	if (!player) return colormixer->empty_state;
-	if (frac>1) frac=1;
-	return colormixer->minC[player]*(1-frac)+colormixer->maxC[player]*frac; // note: maybe handle alpha manually?
+int getpartialcolor(struct ColorMixer *colormixer, struct State *state){
+	if (!(state->owner)) return colormixer->empty_state;
+	double frac=min(state->cnt, MaxSoldierCount);
+	frac/=MaxSoldierCount;
+	if (SHIT && state->owner==1){
+		printf("cnt=%d  frac=%.3f\n", state->cnt, frac); // note: some shit over here
+		SHIT=0;
+	}
+	int mn=colormixer->minC[state->owner]-0xff000000;
+	int mx=colormixer->maxC[state->owner]-0xff000000;
+	int r=(mn&0xff)*(1-frac)+(mx&0xff)*frac; mn/=0xff; mx/=0xff;
+	int g=(mn&0xff)*(1-frac)+(mx&0xff)*frac; mn/=0xff; mx/=0xff;
+	int b=(mn&0xff)*(1-frac)+(mx&0xff)*frac; mn/=0xff; mx/=0xff;
+	return r+(g<<8)+(b<<16)+0xff000000; // note: maybe handle alpha manually?
 }
 
 struct ColorMixer* ReadColorConfig(char *filename){
@@ -154,6 +168,8 @@ void PrepareMap(struct State *states){
 		// assert(ted[i]);
 		states[i].x=sumx[i]/ted[i];
 		states[i].y=sumy[i]/ted[i];
+		states[i].owner=0;
+		states[i].cnt=InitialSoldierCount;
 	}
 }
 
@@ -169,9 +185,10 @@ SDL_Texture* MakeBackGround(SDL_Renderer *renderer, struct State *states, struct
 	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++){
 		if (A[x][y]==-1) pixelColor(renderer, x, y, colormixer->border_line);
 		else if (A[x][y]==n) pixelColor(renderer, x, y, colormixer->blank);
-		else pixelColor(renderer, x, y, getpartialcolor(colormixer, 1, 1)); // to be edited later
+		else pixelColor(renderer, x, y, getpartialcolor(colormixer, states+A[x][y])); // to be edited later
 	}
-	for (int i=0; i<n; i++) filledCircleColor(renderer, states[i].x, states[i].y, 15, 0xffd8f780);
+	for (int i=0; i<n; i++)
+		filledCircleColor(renderer, states[i].x, states[i].y, 15, (states[i].owner?0xff333333:0xffffffff));
 	
 	SDL_SetRenderTarget(renderer, 0);
 	return texture;
@@ -197,21 +214,30 @@ int main(){
 	
 	n=10;
 	nn=20;
-	m=2;
+	m=6;
 	struct State *states=(struct State *)malloc(nn*sizeof(struct State));
 	GenerateRandomMap(states);
 	PrepareMap(states);
 	// printf("prepared map\n");
 
+	for (int i=0; i<m; i++) states[i].owner=i+1, states[i].cnt=InitialSoldierCount;
 
-	SDL_Texture *background=MakeBackGround(renderer, states, colormixer);
+	SDL_Texture *background;
 
+	double shit=0;
 	int begining_of_time = SDL_GetTicks();
 	while (1) {
 		int start_ticks = SDL_GetTicks();
 
 		if (handleEvents()==EXIT) break;
 
+		shit+=0.08;
+		states[0].cnt=min((int)shit, 50);
+		printf("shit=%.2f  ", shit);
+		SHIT=1;
+		// note: some fucking bug here
+
+		background=MakeBackGround(renderer, states, colormixer);
 		SDL_RenderCopy(renderer, background, 0, 0); // draw screen background map
 		
 		char* buffer = malloc(sizeof(char) * 50);

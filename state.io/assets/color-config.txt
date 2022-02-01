@@ -1,4 +1,4 @@
-blank: 225,225,225
+blank: 230,230,230
 border-line: 245,245,245
 
 empty-state: 163,163,163
