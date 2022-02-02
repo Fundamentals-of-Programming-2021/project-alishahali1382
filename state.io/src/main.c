@@ -61,25 +61,19 @@ void GenerateRandomMap(struct State *states){ // uses global variable nn
 	}
 }
 
-int SHIT=0;
-
 struct ColorMixer{
 	int blank, empty_state, border_line;
 	int *minC, *maxC;
 };
 int getpartialcolor(struct ColorMixer *colormixer, struct State *state){
 	if (!(state->owner)) return colormixer->empty_state;
-	double frac=min(state->cnt, MaxSoldierCount);
-	frac/=MaxSoldierCount;
-	if (SHIT && state->owner==1){
-		printf("cnt=%d  frac=%.3f\n", state->cnt, frac); // note: some shit over here
-		SHIT=0;
-	}
+	int ted=min(state->cnt, MaxSoldierCount);
 	int mn=colormixer->minC[state->owner]-0xff000000;
 	int mx=colormixer->maxC[state->owner]-0xff000000;
-	int r=(mn&0xff)*(1-frac)+(mx&0xff)*frac; mn/=0xff; mx/=0xff;
-	int g=(mn&0xff)*(1-frac)+(mx&0xff)*frac; mn/=0xff; mx/=0xff;
-	int b=(mn&0xff)*(1-frac)+(mx&0xff)*frac; mn/=0xff; mx/=0xff;
+	int r=((mn&0xff)*(MaxSoldierCount-ted) + (mx&0xff)*ted)/MaxSoldierCount; mn>>=8; mx>>=8;
+	int g=((mn&0xff)*(MaxSoldierCount-ted) + (mx&0xff)*ted)/MaxSoldierCount; mn>>=8; mx>>=8;
+	int b=((mn&0xff)*(MaxSoldierCount-ted) + (mx&0xff)*ted)/MaxSoldierCount; mn>>=8; mx>>=8;
+	// note: maybe just (mn*a+mx*b)/(a+b)?
 	return r+(g<<8)+(b<<16)+0xff000000; // note: maybe handle alpha manually?
 }
 
@@ -224,26 +218,19 @@ int main(){
 
 	SDL_Texture *background;
 
-	double shit=0;
 	int begining_of_time = SDL_GetTicks();
-	while (1) {
+	while (1){
 		int start_ticks = SDL_GetTicks();
-
 		if (handleEvents()==EXIT) break;
-
-		shit+=0.08;
-		states[0].cnt=min((int)shit, 50);
-		printf("shit=%.2f  ", shit);
-		SHIT=1;
-		// note: some fucking bug here
 
 		background=MakeBackGround(renderer, states, colormixer);
 		SDL_RenderCopy(renderer, background, 0, 0); // draw screen background map
 		
+		
 		char* buffer = malloc(sizeof(char) * 50);
 		sprintf(buffer, "elapsed time: %dms", start_ticks-begining_of_time);
-		// printf("%s", buffer);
 		stringRGBA(renderer, 5, 5, buffer, 0, 0, 255, 255);
+		
 		
 		SDL_RenderPresent(renderer);
 
