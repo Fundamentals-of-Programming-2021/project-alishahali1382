@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(state C)
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 11)
 
 file(GLOB_RECURSE SOURCE "src/*.c" "src/*.h")
 add_executable(state "${SOURCE}")
