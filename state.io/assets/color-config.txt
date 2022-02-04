@@ -3,21 +3,27 @@ border-line: 245,245,245
 
 empty-state: 163,163,163
 
+player1: 50,105, 140
 player1-min: 170,220,255
 player1-max: 75,180,255
 
+player2: 120,20,15
 player2-min: 255,135,110
 player2-max: 255,50,50
 
+player3: 0,95,85
 player3-min: 155,230,215
 player3-max: 50,205,175
 
+player4: 95,40,125
 player4-min: 230,170,225
 player4-max: 220,140,210
 
+player5: 130,85,15
 player5-min: 250,220,165
 player5-max: 245,175,35
 
+player6: 80,40,128
 player6-min: 175,195,240
 player6-max: 75,110,215
 

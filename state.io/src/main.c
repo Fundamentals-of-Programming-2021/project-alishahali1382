@@ -5,6 +5,8 @@
 #include <string.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
+// #include "main.h"
+// #include "state.c"
 
 typedef long long ll;
 #define Width 800
@@ -43,11 +45,11 @@ struct State{
 	int x, y; // center position
 	int owner, cnt; // cnt: number of soldiers
 };
-
 int distance_state(struct State *A, struct State *B){ // squared distance
 	int dx=(A->x)-(B->x), dy=(A->y)-(B->y);
 	return dx*dx+dy*dy;
 }
+
 void GenerateRandomMap(struct State *states){ // uses global variable nn
 	for (int i=0; i<nn; i++){
 		(states+i)->x=rand2(MinStateDistance/2, Width-MinStateDistance/2);
@@ -63,7 +65,7 @@ void GenerateRandomMap(struct State *states){ // uses global variable nn
 
 struct ColorMixer{
 	int blank, empty_state, border_line;
-	int *minC, *maxC;
+	int *minC, *maxC, *C;
 };
 int getpartialcolor(struct ColorMixer *colormixer, struct State *state){
 	if (!(state->owner)) return colormixer->empty_state;
@@ -82,6 +84,7 @@ struct ColorMixer* ReadColorConfig(char *filename){
 	if (f==NULL) error("color config file not found :(");
 	
 	struct ColorMixer *res=(struct ColorMixer *)(malloc(sizeof(struct ColorMixer)));
+	res->C=(int*)(malloc(sizeof(int)*(MaxPlayers+1)));
 	res->minC=(int*)(malloc(sizeof(int)*(MaxPlayers+1)));
 	res->maxC=(int*)(malloc(sizeof(int)*(MaxPlayers+1)));
 	
@@ -100,12 +103,18 @@ struct ColorMixer* ReadColorConfig(char *filename){
 	if (tmp<4 || strcmp(S, "empty-state:")) error("color-config file invalid line 3 empty-state");
 	res->empty_state=rgb_to_int(r, g, b);
 
-	char Smin[]="player0-min:", Smax[]="player0-max:", error_message[]="color-config file invalid player 0 color";
+	char Smin[]="player0-min:", Smax[]="player0-max:", SS[]="player0:";
+	char error_message[]="color-config file invalid player 0 color";
 	for (int player=1; player<=MaxPlayers; player++){
 		// MaxPlayers<=9
+		SS[6]++;
 		Smin[6]++;
 		Smax[6]++;
 		error_message[33]++;
+		
+		tmp=fscanf(f, "%s %d,%d,%d", S, &r, &g, &b);
+		if (tmp<4 || strcmp(S, SS)) error(error_message);
+		res->C[player]=rgb_to_int(r, g, b);
 		
 		tmp=fscanf(f, "%s %d,%d,%d", S, &r, &g, &b);
 		if (tmp<4 || strcmp(S, Smin)) error(error_message);
@@ -182,7 +191,7 @@ SDL_Texture* MakeBackGround(SDL_Renderer *renderer, struct State *states, struct
 		else pixelColor(renderer, x, y, getpartialcolor(colormixer, states+A[x][y])); // to be edited later
 	}
 	for (int i=0; i<n; i++)
-		filledCircleColor(renderer, states[i].x, states[i].y, 15, (states[i].owner?0xff333333:0xffffffff));
+		filledCircleColor(renderer, states[i].x, states[i].y, 15, 0x80000000);
 	
 	SDL_SetRenderTarget(renderer, 0);
 	return texture;
@@ -199,11 +208,12 @@ int handleEvents(){
 	return 0;
 }
 
+
 int main(){
 	srand(time(0));
 	struct ColorMixer *colormixer = ReadColorConfig("assets/color-config.txt");
 	SDL_Init(SDL_INIT_VIDEO);
-	SDL_Window* window = SDL_CreateWindow("map generator", 20, 20, Width, Height, SDL_WINDOW_OPENGL);
+	SDL_Window* window = SDL_CreateWindow("state.io", 20, 20, Width, Height, SDL_WINDOW_OPENGL);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	
 	n=10;
