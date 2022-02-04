@@ -45,6 +45,7 @@ struct State{
 	int x, y; // center position
 	int owner, cnt; // cnt: number of soldiers
 };
+
 int distance_state(struct State *A, struct State *B){ // squared distance
 	int dx=(A->x)-(B->x), dy=(A->y)-(B->y);
 	return dx*dx+dy*dy;
@@ -181,19 +182,25 @@ SDL_Texture* MakeBackGround(SDL_Renderer *renderer, struct State *states, struct
 	// the main point is optimizing the renderings and dont create a background at each frame
 	// a new backgroung should be created every time a cells owner changes.
 	// if partial-color is used, the process is mostly point-less
-	
-	SDL_Texture *texture=SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, Width, Height);
-	SDL_SetRenderTarget(renderer, texture);
-	
-	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++){
-		if (A[x][y]==-1) pixelColor(renderer, x, y, colormixer->border_line);
-		else if (A[x][y]==n) pixelColor(renderer, x, y, colormixer->blank);
-		else pixelColor(renderer, x, y, getpartialcolor(colormixer, states+A[x][y])); // to be edited later
+	SDL_Surface *surface=SDL_CreateRGBSurface(0, Width, Height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+
+	int color[n];
+	for (int i=0; i<n; i++) color[i]=getpartialcolor(colormixer, states+i);
+
+	int *pixel=surface->pixels;
+	for (int y=0; y<Height; y++)for (int x=0; x<Width; x++) {
+		if (A[x][y]==-1) *pixel=colormixer->border_line;
+		else if (A[x][y]==n) *pixel=colormixer->blank;
+		else *pixel=color[A[x][y]];
+		pixel++;
+		// if (A[x][y]==-1) pixelColor(renderer, x, y, colormixer->border_line);
+		// else if (A[x][y]==n) pixelColor(renderer, x, y, colormixer->blank);
+		// else pixelColor(renderer, x, y, color[A[x][y]]);
+		// else pixelColor(renderer, x, y, getpartialcolor(colormixer, states+A[x][y]));
+		// note: edit here later
 	}
-	for (int i=0; i<n; i++)
-		filledCircleColor(renderer, states[i].x, states[i].y, 15, 0x80000000);
-	
-	SDL_SetRenderTarget(renderer, 0);
+	SDL_Texture *texture=SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);
 	return texture;
 }
 
@@ -234,6 +241,7 @@ int main(){
 		int start_ticks = SDL_GetTicks();
 		if (handleEvents()==EXIT) break;
 
+		if (background) SDL_DestroyTexture(background);
 		background=MakeBackGround(renderer, states, colormixer);
 		printf("render background done in %dms\n", SDL_GetTicks()-start_ticks);
 
