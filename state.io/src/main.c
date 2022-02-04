@@ -11,7 +11,7 @@
 typedef long long ll;
 #define Width 800
 #define Height 600
-const double FPS = 30;
+const int FPS = 30;
 const int MinStateDistance=70; // maybe change it?
 const int BorderLineWidth=2; // the thickness of the lines seperating states
 const int MinStates=6, MaxStates=30;
@@ -229,23 +229,33 @@ int main(){
 	SDL_Texture *background;
 
 	int begining_of_time = SDL_GetTicks();
+	printf("begining_of_time=%d\n", begining_of_time);
 	while (1){
 		int start_ticks = SDL_GetTicks();
 		if (handleEvents()==EXIT) break;
 
 		background=MakeBackGround(renderer, states, colormixer);
+		printf("render background done in %dms\n", SDL_GetTicks()-start_ticks);
+
 		SDL_RenderCopy(renderer, background, 0, 0); // draw screen background map
 		
 		
-		char* buffer = malloc(sizeof(char) * 50);
-		sprintf(buffer, "elapsed time: %dms", start_ticks-begining_of_time);
+		char* buffer = malloc(sizeof(char) * 60);
+		sprintf(buffer, "elapsed time: %dms   FPS: %d", start_ticks-begining_of_time, 1000/max(SDL_GetTicks()-start_ticks, 1));
 		stringRGBA(renderer, 5, 5, buffer, 0, 0, 255, 255);
 		
 		
 		SDL_RenderPresent(renderer);
 
-		// SDL_Delay(1000/FPS-(SDL_GetTicks()-start_ticks));
-		while (SDL_GetTicks()-start_ticks < 1000 / FPS);
+
+
+
+		// printf("delay=%d\n", 1000/FPS-(SDL_GetTicks()-start_ticks));
+		// int tmp=SDL_GetTicks();
+		// printf("GetTicks=%d\n", tmp);
+		
+		SDL_Delay(max(1000/FPS-(SDL_GetTicks()-start_ticks), 0));
+		// while (SDL_GetTicks()-start_ticks < 1000 / FPS);
 	}
 
 	SDL_DestroyRenderer(renderer);
