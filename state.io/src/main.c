@@ -5,6 +5,8 @@
 #include <string.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 // #include "main.h"
 // #include "state.c"
 
@@ -31,7 +33,7 @@ int distance2(int x, int y, int xx, int yy){ // squared distance
 	int dx=x-xx, dy=y-yy;
 	return dx*dx+dy*dy;
 }
-void error(char *error_message){
+void error(const char *error_message){
 	FILE *f=fopen("error-log.txt", "w+");
 	fprintf(f, "%s\n", error_message);
 	fclose(f);
@@ -129,10 +131,11 @@ struct ColorMixer* ReadColorConfig(char *filename){
 	return res;
 }
 
+
 // A[x][y]=-1   : its a border line
 // 0<=A[x][y]<n : its a state
 // A[x][y]=n    : its a non-playing field
-int A[Width][Height], B[Width][Height]; // global array needed for making background
+int A[Width][Height], B[Width][Height]; // B: temp array for making A
 void PrepareMap(struct State *states){
 	if (!n) error("PrepareMap called with n=0");
 	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++){
@@ -178,10 +181,7 @@ void PrepareMap(struct State *states){
 }
 
 SDL_Texture* MakeBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer){
-	// it makes a texture that corresponds to background.
-	// the main point is optimizing the renderings and dont create a background at each frame
-	// a new backgroung should be created every time a cells owner changes.
-	// if partial-color is used, the process is mostly point-less
+	// it makes a texture that corresponds to background(color of states)
 	SDL_Surface *surface=SDL_CreateRGBSurface(0, Width, Height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 
 	int color[n];
@@ -193,11 +193,6 @@ SDL_Texture* MakeBackGround(SDL_Renderer *renderer, struct State *states, struct
 		else if (A[x][y]==n) *pixel=colormixer->blank;
 		else *pixel=color[A[x][y]];
 		pixel++;
-		// if (A[x][y]==-1) pixelColor(renderer, x, y, colormixer->border_line);
-		// else if (A[x][y]==n) pixelColor(renderer, x, y, colormixer->blank);
-		// else pixelColor(renderer, x, y, color[A[x][y]]);
-		// else pixelColor(renderer, x, y, getpartialcolor(colormixer, states+A[x][y]));
-		// note: edit here later
 	}
 	SDL_Texture *texture=SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_FreeSurface(surface);
@@ -219,10 +214,12 @@ int handleEvents(){
 int main(){
 	srand(time(0));
 	struct ColorMixer *colormixer = ReadColorConfig("assets/color-config.txt");
-	SDL_Init(SDL_INIT_VIDEO);
+	if (SDL_Init(SDL_INIT_VIDEO)<0) error(SDL_GetError());
+	if (TTF_Init()<0) error(SDL_GetError());
 	SDL_Window* window = SDL_CreateWindow("state.io", 20, 20, Width, Height, SDL_WINDOW_OPENGL);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	
+
 	n=10;
 	nn=20;
 	m=6;
@@ -236,7 +233,7 @@ int main(){
 	SDL_Texture *background;
 
 	int begining_of_time = SDL_GetTicks();
-	printf("begining_of_time=%d\n", begining_of_time);
+	// printf("begining_of_time=%d\n", begining_of_time);
 	while (1){
 		int start_ticks = SDL_GetTicks();
 		if (handleEvents()==EXIT) break;
@@ -249,21 +246,13 @@ int main(){
 		
 		
 		char* buffer = malloc(sizeof(char) * 60);
-		sprintf(buffer, "elapsed time: %dms   FPS: %d", start_ticks-begining_of_time, 1000/max(SDL_GetTicks()-start_ticks, 1));
+		sprintf(buffer, "elapsed time: %dms   FPS: %d", start_ticks-begining_of_time, min(FPS, 1000/max(SDL_GetTicks()-start_ticks, 1)));
 		stringRGBA(renderer, 5, 5, buffer, 0, 0, 255, 255);
 		
 		
 		SDL_RenderPresent(renderer);
 
-
-
-
-		// printf("delay=%d\n", 1000/FPS-(SDL_GetTicks()-start_ticks));
-		// int tmp=SDL_GetTicks();
-		// printf("GetTicks=%d\n", tmp);
-		
 		SDL_Delay(max(1000/FPS-(SDL_GetTicks()-start_ticks), 0));
-		// while (SDL_GetTicks()-start_ticks < 1000 / FPS);
 	}
 
 	SDL_DestroyRenderer(renderer);
