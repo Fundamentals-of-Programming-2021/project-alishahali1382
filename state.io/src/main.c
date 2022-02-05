@@ -21,6 +21,7 @@ const int MinStates=6, MaxStates=30;
 const int MinPlayers=2, MaxPlayers=6;
 const int InitialSoldierCount=10; // number of soldiers of each state when the game begins
 const int MaxSoldierCount=50; // number of soldiers of eash state when the game begins
+const double SoldierSpeed=20; // pixel per second
 
 int swap(int *x, int *y){ *x^=*y, *y^=*x, *x^=*y;}
 int min(int x, int y){ return (x<y?x:y);}
@@ -132,6 +133,43 @@ struct ColorMixer* ReadColorConfig(char *filename){
 	return res;
 }
 
+
+struct Troop{
+	int x, y;
+	int owner;
+	double f; // f=1 => the path is complete
+	struct State *S1, *S2;
+};
+int cnttroops;
+struct Troop troops[10000];
+
+void MoveTroop(struct Troop *T, int dt){ // dt: delta-time in miliseconds
+	double dx=T->S1->x - T->S2->x, dy=T->S1->y - T->S2->y;
+	double dist=hypot(dx, dy);
+	double tmp=SoldierSpeed*dt/dist/1000;
+	dx=dx/dist*SoldierSpeed*dt/1000;
+	dy=dy/dist*SoldierSpeed*dt/1000;
+	// if 2x-speed potion was active: dx*=2, dy*=2
+	T->x+=dx;
+	T->y+=dy;
+	T->f+=tmp;
+}
+
+void ApplyTroopArrival(struct State *S, int x){ // a soldier of player x arrived at S
+	// todo
+}
+
+void ProcessTroops(int dt){
+	for (int i=0; i<cnttroops; i++){
+		MoveTroop(troops+i, dt);
+		if (troops[i].f>=1){
+			ApplyTroopArrival(troops[i].S2, troops[i].owner);
+			troops[i]=troops[--cnttroops];
+			i--;
+		}
+	}
+	// todo: check collision of troops
+}
 
 // A[x][y]=-1   : its a border line
 // 0<=A[x][y]<n : its a state
@@ -268,7 +306,6 @@ int main(){
 		
 		DrawBackGround(renderer, states, colormixer);
 		DrawStates(renderer, states, colormixer, font28);
-		printf("rendering done in %dms\n", SDL_GetTicks()-start_ticks);
 
 
 		
@@ -279,6 +316,7 @@ int main(){
 		free(buffer);
 		
 		SDL_RenderPresent(renderer);
+		printf("rendering done in %dms\n", SDL_GetTicks()-start_ticks);
 
 		SDL_Delay(max(1000/FPS-(SDL_GetTicks()-start_ticks), 0));
 	}
