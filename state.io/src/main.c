@@ -14,11 +14,12 @@ typedef long long ll;
 #define Width 800
 #define Height 600
 const int FPS = 30;
-const int MinStateDistance=70; // maybe change it?
+const int StateRadius=25;
+const int MinStateDistance=90; // maybe change it?
 const int BorderLineWidth=2; // the thickness of the lines seperating states
 const int MinStates=6, MaxStates=30;
 const int MinPlayers=2, MaxPlayers=6;
-const int InitialSoldierCount=10; // number of soldiers of eash state when the game begins
+const int InitialSoldierCount=10; // number of soldiers of each state when the game begins
 const int MaxSoldierCount=50; // number of soldiers of eash state when the game begins
 
 int swap(int *x, int *y){ *x^=*y, *y^=*x, *x^=*y;}
@@ -180,25 +181,53 @@ void PrepareMap(struct State *states){
 	}
 }
 
-SDL_Texture* MakeBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer){
-	// it makes a texture that corresponds to background(color of states)
+void DrawBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer){
 	SDL_Surface *surface=SDL_CreateRGBSurface(0, Width, Height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 
 	int color[n];
 	for (int i=0; i<n; i++) color[i]=getpartialcolor(colormixer, states+i);
 
 	int *pixel=surface->pixels;
-	for (int y=0; y<Height; y++)for (int x=0; x<Width; x++) {
+	for (int y=0; y<Height; y++) for (int x=0; x<Width; x++){
 		if (A[x][y]==-1) *pixel=colormixer->border_line;
 		else if (A[x][y]==n) *pixel=colormixer->blank;
 		else *pixel=color[A[x][y]];
 		pixel++;
 	}
 	SDL_Texture *texture=SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_RenderCopy(renderer, texture, 0, 0);
 	SDL_FreeSurface(surface);
-	return texture;
+	SDL_DestroyTexture(texture);
 }
 
+void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer, TTF_Font *font){
+	for (int i=0; i<n; i++){
+		int owner=states[i].owner;
+		if (!owner){
+			filledCircleColor(renderer, states[i].x, states[i].y, StateRadius, 0xbfffffff);
+		}
+		else{
+			filledCircleColor(renderer, states[i].x, states[i].y, StateRadius, 0x70000000);
+			// circleColor(renderer, states[i].x, states[i].y, StateRadius, colormixer->C[states[i].owner]);
+			// filledCircleColor(renderer, states[i].x, states[i].y, StateRadius, colormixer->C[states[i].owner]);
+			// circleColor(renderer, states[i].x, states[i].y, StateRadius, colormixer->C[states[i].owner]);
+		}
+		char *text=(char*)malloc(5*sizeof(char));
+		sprintf(text, "%d", states[i].cnt);
+		SDL_Color color={0, 0, 0};
+		if (owner) color.r=color.g=color.b=255;
+		SDL_Surface *text_surface=TTF_RenderText_Solid(font, text, color);
+		SDL_Texture *text_texture=SDL_CreateTextureFromSurface(renderer, text_surface);
+		int x=states[i].x, y=states[i].y, w=text_surface->w, h=text_surface->h;
+		// SDL_Rect dest={x-w/2, y+StateRadius+8, w, h};
+		SDL_Rect dest={x-w/2, y-h/2, w, h};
+		SDL_RenderCopy(renderer, text_texture, 0, &dest);
+
+		free(text);
+		SDL_FreeSurface(text_surface);
+		SDL_DestroyTexture(text_texture);
+	}
+}
 
 const int EXIT = -1;
 int handleEvents(){
@@ -216,12 +245,12 @@ int main(){
 	struct ColorMixer *colormixer = ReadColorConfig("assets/color-config.txt");
 	if (SDL_Init(SDL_INIT_VIDEO)<0) error(SDL_GetError());
 	if (TTF_Init()<0) error(SDL_GetError());
+	TTF_Font *font28=TTF_OpenFont("assets/IRNazaninBold.ttf", 28);
 	SDL_Window* window = SDL_CreateWindow("state.io", 20, 20, Width, Height, SDL_WINDOW_OPENGL);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	
 
 	n=10;
-	nn=20;
+	nn=16;
 	m=6;
 	struct State *states=(struct State *)malloc(nn*sizeof(struct State));
 	GenerateRandomMap(states);
@@ -230,25 +259,24 @@ int main(){
 
 	for (int i=0; i<m; i++) states[i].owner=i+1, states[i].cnt=InitialSoldierCount;
 
-	SDL_Texture *background;
-
 	int begining_of_time = SDL_GetTicks();
 	// printf("begining_of_time=%d\n", begining_of_time);
 	while (1){
 		int start_ticks = SDL_GetTicks();
 		if (handleEvents()==EXIT) break;
 
-		if (background) SDL_DestroyTexture(background);
-		background=MakeBackGround(renderer, states, colormixer);
-		printf("render background done in %dms\n", SDL_GetTicks()-start_ticks);
+		
+		DrawBackGround(renderer, states, colormixer);
+		DrawStates(renderer, states, colormixer, font28);
+		printf("rendering done in %dms\n", SDL_GetTicks()-start_ticks);
 
-		SDL_RenderCopy(renderer, background, 0, 0); // draw screen background map
+
 		
 		
 		char* buffer = malloc(sizeof(char) * 60);
 		sprintf(buffer, "elapsed time: %dms   FPS: %d", start_ticks-begining_of_time, min(FPS, 1000/max(SDL_GetTicks()-start_ticks, 1)));
 		stringRGBA(renderer, 5, 5, buffer, 0, 0, 255, 255);
-		
+		free(buffer);
 		
 		SDL_RenderPresent(renderer);
 
