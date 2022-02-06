@@ -1,14 +1,4 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-// #include "main.h"
-// #include "state.c"
+#include "basics.h"
 
 typedef long long ll;
 #define Width 800
@@ -23,25 +13,6 @@ const int InitialSoldierCount=10; // number of soldiers of each state when the g
 const int MaxSoldierCount=50; // number of soldiers of eash state when the game begins
 const double SoldierSpeed=20; // pixel per second
 
-int swap(int *x, int *y){ *x^=*y, *y^=*x, *x^=*y;}
-int min(int x, int y){ return (x<y?x:y);}
-int max(int x, int y){ return (x>y?x:y);}
-double dmin(double x, double y){ return (x<y?x:y);}
-double dmax(double x, double y){ return (x>y?x:y);}
-void assert(int f){ f=1/f;}
-int rand2(int l, int r){ return rand()%(r-l)+l;} // random number in [l, r)
-int sq(int x){ return x*x;}
-int distance2(int x, int y, int xx, int yy){ // squared distance
-	int dx=x-xx, dy=y-yy;
-	return dx*dx+dy*dy;
-}
-void error(const char *error_message){
-	FILE *f=fopen("error-log.txt", "w+");
-	fprintf(f, "%s\n", error_message);
-	fclose(f);
-	exit(1);
-}
-int rgb_to_int(int r, int g, int b){ return 0xff000000+(b<<16)+(g<<8)+(r);}
 
 
 int n, m, nn; // n: number of states    m: number of players    nn: n+"number of shit states"
