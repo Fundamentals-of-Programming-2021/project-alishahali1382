@@ -1,5 +1,9 @@
 #include "main.h"
 
+
+const int TroopRadius=5;
+
+
 int n, m, nn; // n: number of states    m: number of players    nn: n+"number of shit states"
 
 struct Troop{
@@ -17,14 +21,21 @@ void MoveTroop(struct Troop *T, int dt){ // dt: delta-time in miliseconds
 	double tmp=SoldierSpeed*dt/dist/1000;
 	dx=dx/dist*SoldierSpeed*dt/1000;
 	dy=dy/dist*SoldierSpeed*dt/1000;
-	// if 2x-speed potion was active: dx*=2, dy*=2
+	// note: if 2x-speed potion was active: dx*=2, dy*=2
 	T->x+=dx;
 	T->y+=dy;
 	T->f+=tmp;
 }
 
 void ApplyTroopArrival(struct State *S, int x){ // a soldier of player x arrived at S
-	// todo
+	if (S->owner==x) S->cnt++;
+	else if (S->cnt) S->cnt--;
+	else{
+		// note: maybe change here later
+		// change owner of S into x
+		S->owner=x;
+		S->cnt=1;
+	}
 }
 
 void ProcessTroops(int dt){
@@ -38,6 +49,17 @@ void ProcessTroops(int dt){
 	}
 	// todo: check collision of troops
 }
+
+
+void DeployTroop(struct State *X, struct State *Y, int ted){ // sends ted troops from X-->Y
+	double dx=X->x - Y->x, dy=X->y - Y->y;
+	double dist=hypot(dx, dy);
+	dx=dx/dist, dy=dy/dist;
+	double ddx=dy, ddy=-dx;
+	// note: not complete
+
+}
+
 
 // A[x][y]=-1   : its a border line
 // 0<=A[x][y]<n : its a state
@@ -87,6 +109,7 @@ void PrepareMap(struct State *states){
 	}
 }
 
+
 void DrawBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer){
 	SDL_Surface *surface=SDL_CreateRGBSurface(0, Width, Height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 
@@ -135,6 +158,14 @@ void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer 
 	}
 }
 
+void DrawTroops(SDL_Renderer *renderer, struct Troop *troops, struct ColorMixer *colormixer){
+	for (int i=0; i<cnttroops; i++){
+		if (!troops[cnttroops].owner) continue ;
+		filledCircleColor(renderer, troops[i].x, troops[i].y, TroopRadius, colormixer->C[troops[i].owner]);
+	}
+}
+
+
 const int EXIT = -1;
 int handleEvents(){
 	SDL_Event event;
@@ -174,7 +205,7 @@ int main(){
 		
 		DrawBackGround(renderer, states, colormixer);
 		DrawStates(renderer, states, colormixer, font28);
-
+		DrawTroops(renderer, troops, colormixer);
 
 		
 		
