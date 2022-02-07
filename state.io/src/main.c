@@ -3,7 +3,8 @@
 
 const int TroopRadius=6;
 const int TroopLinesDistance=15;
-
+const int MaxParallelTroops=5;
+const int TroopDelayTime=900; // how long until the next wave of troops get deployed
 
 int n, m, nn; // n: number of states    m: number of players    nn: n+"number of shit states"
 
@@ -31,7 +32,10 @@ void MoveTroop(struct Troop *T, int dt){ // dt: delta-time in miliseconds
 
 void ApplyTroopArrival(struct State *S, int x){ // a soldier of player x arrived at S
 	if (S->owner==x) S->cnt++;
-	else if (S->cnt) S->cnt--;
+	else if (S->cnt){
+		if (S->cnt == S->inq) S->inq--;
+		S->cnt--;
+	}
 	else{
 		// note: maybe change here later
 		// change owner of S into x
@@ -56,7 +60,6 @@ void ProcessTroops(int dt){
 	// todo: check collision of troops
 }
 
-
 void DeployTroop(struct State *X, struct State *Y, int ted){ // sends ted troops from X-->Y
 	double x=X->x, y=X->y;
 	// printf("x0=%f   y0=%f\n", x, y);
@@ -78,6 +81,52 @@ void DeployTroop(struct State *X, struct State *Y, int ted){ // sends ted troops
 		cnttroops++;
 		x+=ddx*TroopLinesDistance;
 		y+=ddy*TroopLinesDistance;
+	}
+}
+
+
+struct AttackQuery{
+	struct State *X, *Y;
+	int owner; // who was the owner of X when Query was made
+	int cnt; // sent cnt troops from X-->Y
+	int timer; // how long to wait before send another wave
+};
+struct AttackQuery attackqueries[200];
+
+void AddAttackQuery(struct State *X, struct State *Y){
+	int ted=(X->cnt)-(X->inq);
+	if (!ted) return ;
+	X->inq+=ted;
+	for (int i=0; i<200; i++) if (!attackqueries[i].cnt){
+		attackqueries[i].owner=X->owner;
+		attackqueries[i].cnt=ted;
+		attackqueries[i].X=X;
+		attackqueries[i].Y=Y;
+		attackqueries[i].timer=0;
+		return ;
+	}
+	// note: maybe save the game first?
+	error("too many attack queries!");
+}
+
+// todo: the shitty bug is here
+void ProcessAttackQueries(int dt){
+	for (int i=0; i<200; i++){
+		struct AttackQuery *Q=attackqueries+i;
+		if (!Q->cnt || Q->owner!=Q->X->owner){
+			Q->cnt=0;
+			continue ;
+		}
+		Q->timer-=dt;
+		if (Q->timer > 0) continue ;
+		Q->timer+=TroopDelayTime;
+		
+		Q->cnt=min(Q->cnt, Q->X->inq);
+		int ted=min(Q->cnt, MaxParallelTroops);
+		Q->cnt-=ted;
+		Q->X->cnt-=ted;
+		Q->X->inq-=ted;
+		DeployTroop(Q->X, Q->Y, ted);
 	}
 }
 
@@ -162,7 +211,9 @@ void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer 
 			// circleColor(renderer, states[i].x, states[i].y, StateRadius, colormixer->C[states[i].owner]);
 		}
 		char *text=(char*)malloc(5*sizeof(char));
-		sprintf(text, "%d", states[i].cnt);
+		memset(text, 0, 5);
+		sprintf(text, "%d", states[i].cnt); // todo: some fucking bug here
+		if (!i) printf("text=%s   num=%d\n", text, states[i].cnt);
 		SDL_Color color={0, 0, 0};
 		if (owner) color.r=color.g=color.b=255;
 		SDL_Surface *text_surface=TTF_RenderText_Solid(font, text, color);
@@ -218,7 +269,8 @@ int main(){
 
 
 	// note: for debug
-	DeployTroop(states+0, states+1, 5);
+	// DeployTroop(states+0, states+1, 5);
+	AddAttackQuery(states+0, states+1);
 
 
 	int begining_of_time = SDL_GetTicks();
@@ -231,9 +283,10 @@ int main(){
 		int dt=SDL_GetTicks()-last_tick;
 		last_tick+=dt;
 		
-		// printf("dt=%d   cnttroops=%d\n", dt, cnttroops);
+		ProcessAttackQueries(dt);
 		ProcessTroops(dt);
 
+		// printf("states[0].cnt=%d\n", states[0].cnt);
 
 		
 		DrawBackGround(renderer, states, colormixer);
@@ -242,8 +295,10 @@ int main(){
 		
 		
 
-		char* buffer = malloc(sizeof(char) * 60);
+		char* buffer = malloc(sizeof(char) * 100);
 		sprintf(buffer, "elapsed time: %dms   FPS: %d", start_ticks-begining_of_time, min(FPS, 1000/max(SDL_GetTicks()-start_ticks, 1)));
+		// sprintf(buffer, "states[0].cnt=%d", states[0].cnt);
+		
 		stringRGBA(renderer, 5, 5, buffer, 0, 0, 255, 255);
 		free(buffer);
 		

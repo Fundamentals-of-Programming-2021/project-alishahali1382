@@ -38,10 +38,11 @@ extern int n, nn, m;
 
 struct State{
 	int x, y; // center position
-	int owner, cnt; // cnt: number of soldiers
+	int owner, cnt; // cnt: number of troops
+	int inq; // number of troops waiting to deploy
 };
 
-int distance_state(struct State *A, struct State *B);
+// int distance_state(struct State *A, struct State *B);
 
 void GenerateRandomMap(struct State *states);
 
