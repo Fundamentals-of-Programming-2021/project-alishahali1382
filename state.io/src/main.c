@@ -176,6 +176,7 @@ void PrepareMap(struct State *states){
 		states[i].y=sumy[i]/ted[i];
 		states[i].owner=0;
 		states[i].cnt=InitialSoldierCount;
+		states[i].inq=0;
 	}
 }
 
@@ -249,7 +250,8 @@ int handleEvents(){
 
 
 int main(){
-	srand(time(0));
+	// srand(time(0));
+	srand(0);
 	struct ColorMixer *colormixer = ReadColorConfig("assets/color-config.txt");
 	if (SDL_Init(SDL_INIT_VIDEO)<0) error(SDL_GetError());
 	if (TTF_Init()<0) error(SDL_GetError());
