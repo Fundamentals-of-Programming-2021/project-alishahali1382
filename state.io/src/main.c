@@ -5,6 +5,7 @@ const int TroopRadius=6;
 const int TroopLinesDistance=15;
 const int MaxParallelTroops=5;
 const int TroopDelayTime=900; // how long until the next wave of troops get deployed
+const double TroopPerSecond=1.1; // number of soldiers generated in normal state per second
 
 int n, m, nn; // n: number of states    m: number of players    nn: n+"number of shit states"
 
@@ -84,7 +85,6 @@ void DeployTroop(struct State *X, struct State *Y, int ted){ // sends ted troops
 	}
 }
 
-
 struct AttackQuery{
 	struct State *X, *Y;
 	int owner; // who was the owner of X when Query was made
@@ -109,7 +109,6 @@ void AddAttackQuery(struct State *X, struct State *Y){
 	error("too many attack queries!");
 }
 
-// todo: the shitty bug is here
 void ProcessAttackQueries(int dt){
 	for (int i=0; i<200; i++){
 		struct AttackQuery *Q=attackqueries+i;
@@ -130,6 +129,18 @@ void ProcessAttackQueries(int dt){
 	}
 }
 
+void ProcessStates(struct State *states, int dt){
+	for (int i=0; i<n; i++){
+		states[i].cnt2+=TroopPerSecond*dt/1000;
+		int ted=states[i].cnt2;
+		states[i].cnt2-=ted;
+		// todo: if 2x potion was active:
+		// ted*=2;
+		int lim=(states[i].owner?MaxSoldierCount:MaxMutualSoldierCount);
+		if (states[i].cnt<lim)
+			states[i].cnt=min(lim, states[i].cnt + ted);
+	}
+}
 
 // A[x][y]=-1   : its a border line
 // 0<=A[x][y]<n : its a state
@@ -211,10 +222,10 @@ void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer 
 			// filledCircleColor(renderer, states[i].x, states[i].y, StateRadius, colormixer->C[states[i].owner]);
 			// circleColor(renderer, states[i].x, states[i].y, StateRadius, colormixer->C[states[i].owner]);
 		}
-		char *text=(char*)malloc(5*sizeof(char));
-		memset(text, 0, 5);
+		char *text=(char*)malloc(4*sizeof(char));
+		// memset(text, 0, 5);
 		sprintf(text, "%d", states[i].cnt); // todo: some fucking bug here
-		if (!i) printf("text=%s   num=%d\n", text, states[i].cnt);
+		// if (!i) printf("text=%s   num=%d\n", text, states[i].cnt);
 		SDL_Color color={0, 0, 0};
 		if (owner) color.r=color.g=color.b=255;
 		SDL_Surface *text_surface=TTF_RenderText_Solid(font, text, color);
@@ -272,7 +283,9 @@ int main(){
 
 	// note: for debug
 	// DeployTroop(states+0, states+1, 5);
-	AddAttackQuery(states+0, states+1);
+	AddAttackQuery(states+0, states+3);
+	AddAttackQuery(states+1, states+3);
+	AddAttackQuery(states+2, states+1);
 
 
 	int begining_of_time = SDL_GetTicks();
@@ -287,6 +300,7 @@ int main(){
 		
 		ProcessAttackQueries(dt);
 		ProcessTroops(dt);
+		ProcessStates(states, dt);
 
 		// printf("states[0].cnt=%d\n", states[0].cnt);
 
@@ -296,11 +310,8 @@ int main(){
 		DrawStates(renderer, states, colormixer, font28);
 		
 		
-
 		char* buffer = malloc(sizeof(char) * 100);
 		sprintf(buffer, "elapsed time: %dms   FPS: %d", start_ticks-begining_of_time, min(FPS, 1000/max(SDL_GetTicks()-start_ticks, 1)));
-		// sprintf(buffer, "states[0].cnt=%d", states[0].cnt);
-		
 		stringRGBA(renderer, 5, 5, buffer, 0, 0, 255, 255);
 		free(buffer);
 		

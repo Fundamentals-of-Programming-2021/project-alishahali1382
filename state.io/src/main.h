@@ -10,8 +10,8 @@
 
 typedef long long ll;
 
-#define Width 800
-#define Height 600
+#define Width 980
+#define Height 660
 extern const int FPS;
 extern const int StateRadius;
 extern const int MinStateDistance; // maybe change it?
@@ -19,7 +19,8 @@ extern const int BorderLineWidth; // the thickness of the lines seperating state
 extern const int MinStates, MaxStates;
 extern const int MinPlayers, MaxPlayers;
 extern const int InitialSoldierCount; // number of soldiers of each state when the game begins
-extern const int MaxSoldierCount; // number of soldiers of eash state when the game begins
+extern const int MaxSoldierCount; // number of generated soldiers of a state during game
+extern const int MaxMutualSoldierCount; // number of generated soldiers of a mutual state during game
 extern const double SoldierSpeed; // pixel per second
 
 int swap(int *x, int *y);
@@ -40,7 +41,10 @@ struct State{
 	int x, y; // center position
 	int owner, cnt; // cnt: number of troops
 	int inq; // number of troops waiting to deploy
+	double cnt2; // fractional soldier count
 };
+
+void ProcessStates(struct State *states, int dt);
 
 // int distance_state(struct State *A, struct State *B);
 
