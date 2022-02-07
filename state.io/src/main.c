@@ -1,13 +1,14 @@
 #include "main.h"
 
 
-const int TroopRadius=5;
+const int TroopRadius=6;
+const int TroopLinesDistance=15;
 
 
 int n, m, nn; // n: number of states    m: number of players    nn: n+"number of shit states"
 
 struct Troop{
-	int x, y;
+	double x, y;
 	int owner;
 	double f; // f=1 => the path is complete
 	struct State *S1, *S2;
@@ -16,11 +17,12 @@ int cnttroops;
 struct Troop troops[10000];
 
 void MoveTroop(struct Troop *T, int dt){ // dt: delta-time in miliseconds
-	double dx=T->S1->x - T->S2->x, dy=T->S1->y - T->S2->y;
+	double dx=T->S2->x - T->S1->x, dy=T->S2->y - T->S1->y;
 	double dist=hypot(dx, dy);
 	double tmp=SoldierSpeed*dt/dist/1000;
 	dx=dx/dist*SoldierSpeed*dt/1000;
 	dy=dy/dist*SoldierSpeed*dt/1000;
+
 	// note: if 2x-speed potion was active: dx*=2, dy*=2
 	T->x+=dx;
 	T->y+=dy;
@@ -38,10 +40,14 @@ void ApplyTroopArrival(struct State *S, int x){ // a soldier of player x arrived
 	}
 }
 
+int isTroopArrived(struct Troop *T){
+	return hypot((T->x)-(T->S2->x), (T->y)-(T->S2->y))<=StateRadius+TroopRadius;
+}
+
 void ProcessTroops(int dt){
 	for (int i=0; i<cnttroops; i++){
 		MoveTroop(troops+i, dt);
-		if (troops[i].f>=1){
+		if (troops[i].f>=1 || isTroopArrived(troops+i)){
 			ApplyTroopArrival(troops[i].S2, troops[i].owner);
 			troops[i]=troops[--cnttroops];
 			i--;
@@ -52,12 +58,27 @@ void ProcessTroops(int dt){
 
 
 void DeployTroop(struct State *X, struct State *Y, int ted){ // sends ted troops from X-->Y
-	double dx=X->x - Y->x, dy=X->y - Y->y;
+	double x=X->x, y=X->y;
+	// printf("x0=%f   y0=%f\n", x, y);
+	double dx=Y->x - x, dy=Y->y - y;
 	double dist=hypot(dx, dy);
 	dx=dx/dist, dy=dy/dist;
+	x+=dx*StateRadius, y+=dy*StateRadius;
+	// printf("x1=%f   y1=%f\n", x, y);
 	double ddx=dy, ddy=-dx;
-	// note: not complete
-
+	x-=ddx*TroopLinesDistance*(ted-1)/2;
+	y-=ddy*TroopLinesDistance*(ted-1)/2;
+	for (int i=0; i<ted; i++){
+		troops[cnttroops].S1=X;
+		troops[cnttroops].S2=Y;
+		troops[cnttroops].f=0;
+		troops[cnttroops].owner=X->owner;
+		troops[cnttroops].x=x;
+		troops[cnttroops].y=y;
+		cnttroops++;
+		x+=ddx*TroopLinesDistance;
+		y+=ddy*TroopLinesDistance;
+	}
 }
 
 
@@ -109,7 +130,6 @@ void PrepareMap(struct State *states){
 	}
 }
 
-
 void DrawBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer){
 	SDL_Surface *surface=SDL_CreateRGBSurface(0, Width, Height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 
@@ -160,7 +180,7 @@ void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer 
 
 void DrawTroops(SDL_Renderer *renderer, struct Troop *troops, struct ColorMixer *colormixer){
 	for (int i=0; i<cnttroops; i++){
-		if (!troops[cnttroops].owner) continue ;
+		if (!troops[i].owner) continue ;
 		filledCircleColor(renderer, troops[i].x, troops[i].y, TroopRadius, colormixer->C[troops[i].owner]);
 	}
 }
@@ -188,7 +208,7 @@ int main(){
 
 	n=10;
 	nn=16;
-	m=6;
+	m=3;
 	struct State *states=(struct State *)malloc(nn*sizeof(struct State));
 	GenerateRandomMap(states);
 	PrepareMap(states);
@@ -196,27 +216,39 @@ int main(){
 
 	for (int i=0; i<m; i++) states[i].owner=i+1, states[i].cnt=InitialSoldierCount;
 
+
+	// note: for debug
+	DeployTroop(states+0, states+1, 5);
+
+
 	int begining_of_time = SDL_GetTicks();
-	// printf("begining_of_time=%d\n", begining_of_time);
+	int last_tick=SDL_GetTicks();
 	while (1){
 		int start_ticks = SDL_GetTicks();
 		if (handleEvents()==EXIT) break;
 
 		
-		DrawBackGround(renderer, states, colormixer);
-		DrawStates(renderer, states, colormixer, font28);
-		DrawTroops(renderer, troops, colormixer);
+		int dt=SDL_GetTicks()-last_tick;
+		last_tick+=dt;
+		
+		// printf("dt=%d   cnttroops=%d\n", dt, cnttroops);
+		ProcessTroops(dt);
+
 
 		
+		DrawBackGround(renderer, states, colormixer);
+		DrawTroops(renderer, troops, colormixer);
+		DrawStates(renderer, states, colormixer, font28);
 		
+		
+
 		char* buffer = malloc(sizeof(char) * 60);
 		sprintf(buffer, "elapsed time: %dms   FPS: %d", start_ticks-begining_of_time, min(FPS, 1000/max(SDL_GetTicks()-start_ticks, 1)));
 		stringRGBA(renderer, 5, 5, buffer, 0, 0, 255, 255);
 		free(buffer);
 		
 		SDL_RenderPresent(renderer);
-		printf("rendering done in %dms\n", SDL_GetTicks()-start_ticks);
-
+		
 		SDL_Delay(max(1000/FPS-(SDL_GetTicks()-start_ticks), 0));
 	}
 
