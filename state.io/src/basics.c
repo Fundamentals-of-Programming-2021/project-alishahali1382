@@ -1,4 +1,14 @@
-#include "basics.h"
+#include "main.h"
+
+const int FPS = 30;
+const int StateRadius=25;
+const int MinStateDistance=90; // maybe change it?
+const int BorderLineWidth=2; // the thickness of the lines seperating states
+const int MinStates=6, MaxStates=30;
+const int MinPlayers=2, MaxPlayers=6;
+const int InitialSoldierCount=10; // number of soldiers of each state when the game begins
+const int MaxSoldierCount=50; // number of soldiers of eash state when the game begins
+const double SoldierSpeed=20; // pixel per second
 
 int swap(int *x, int *y){ *x^=*y, *y^=*x, *x^=*y;}
 int min(int x, int y){ return (x<y?x:y);}
