@@ -86,10 +86,8 @@ void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer 
 			// filledCircleColor(renderer, states[i].x, states[i].y, StateRadius, colormixer->C[states[i].owner]);
 			// circleColor(renderer, states[i].x, states[i].y, StateRadius, colormixer->C[states[i].owner]);
 		}
-		char *text=(char*)malloc(4*sizeof(char));
-		// memset(text, 0, 5);
-		sprintf(text, "%d", states[i].cnt); // todo: some fucking bug here
-		// if (!i) printf("text=%s   num=%d\n", text, states[i].cnt);
+		char *text=(char*)malloc(5*sizeof(char));
+		sprintf(text, "%d", states[i].cnt);
 		SDL_Color color={0, 0, 0};
 		if (owner) color.r=color.g=color.b=255;
 		SDL_Surface *text_surface=TTF_RenderText_Solid(font, text, color);

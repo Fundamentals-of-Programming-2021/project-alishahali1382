@@ -21,6 +21,9 @@ int distance2(int x, int y, int xx, int yy){ // squared distance
 	int dx=x-xx, dy=y-yy;
 	return dx*dx+dy*dy;
 }
+int collide(int dx, int dy, int r){
+	return dx*dx+dy*dy<=r*r;
+}
 void error(const char *error_message){
 	FILE *f=fopen("error-log.txt", "w");
 	fprintf(f, "%s\n", error_message);

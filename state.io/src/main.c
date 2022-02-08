@@ -9,12 +9,43 @@ int n, m, nn; // n: number of states    m: number of players    nn: n+"number of
 
 
 
+int selected_state=-1; // -1: no state is selected
+
 const int EXIT = -1;
-int handleEvents(){
+int GameHandleEvents(SDL_Window *window, struct State *states){
 	SDL_Event event;
 	while (SDL_PollEvent(&event)){
 		if (event.type == SDL_QUIT)
 			return EXIT;
+		if (event.type == SDL_MOUSEBUTTONDOWN){
+			if (event.button.button == SDL_BUTTON_LEFT){
+				int x, y, id=-1;
+				SDL_GetMouseState(&x, &y);
+				for (int i=0; i<n && id==-1; i++)
+					if (distance2(x, y, states[i].x, states[i].y)<=StateRadius*StateRadius) id=i;
+
+				if (id==-1){
+					// left click on random place de-selects?
+					selected_state=-1;
+					continue ;
+				}
+				// printf("clicked on state %d\n", id);
+				if (selected_state==-1){
+					// todo: in final release, this should be:
+					// if (states[id].owner!=1) continue ; // ignore selecting mutual sides
+					if (!states[id].owner) continue ; // ignore selecting mutual sides
+					selected_state=id;
+				}
+				else if (selected_state!=id){
+					AddAttackQuery(states+selected_state, states+id);
+					selected_state=-1;
+				}
+				// if selected_state==id: do nothing
+			}
+			else if (event.button.button == SDL_BUTTON_RIGHT){
+				selected_state=-1;
+			}
+		}
 	}
 	return 0;
 }
@@ -43,16 +74,16 @@ int main(){
 
 	// note: for debug
 	// DeployTroop(states+0, states+1, 5);
-	AddAttackQuery(states+0, states+3);
-	AddAttackQuery(states+1, states+3);
-	AddAttackQuery(states+2, states+1);
+	// AddAttackQuery(states+0, states+3);
+	// AddAttackQuery(states+1, states+3);
+	// AddAttackQuery(states+2, states+1);
 
 
 	int begining_of_time = SDL_GetTicks();
 	int last_tick=SDL_GetTicks();
 	while (1){
 		int start_ticks = SDL_GetTicks();
-		if (handleEvents()==EXIT) break;
+		if (GameHandleEvents(window, states)==EXIT) break;
 
 		
 		int dt=SDL_GetTicks()-last_tick;

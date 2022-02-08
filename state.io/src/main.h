@@ -37,6 +37,7 @@ void assert(int f);
 int rand2(int l, int r);
 int sq(int x);
 int distance2(int x, int y, int xx, int yy);
+int collide(int dx, int dy, int r);
 void error(const char *error_message);
 int rgb_to_int(int r, int g, int b);
 

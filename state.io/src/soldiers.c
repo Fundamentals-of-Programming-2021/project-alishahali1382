@@ -22,6 +22,9 @@ void ApplyTroopArrival(struct State *S, int x){ // a soldier of player x arrived
 	else if (S->cnt){
 		if (S->cnt == S->inq) S->inq--;
 		S->cnt--;
+
+		// when you are under attack, you dont re-generate soldiers:
+		S->cnt2=0;
 	}
 	else{
 		// note: maybe change here later
@@ -32,6 +35,7 @@ void ApplyTroopArrival(struct State *S, int x){ // a soldier of player x arrived
 }
 
 int isTroopArrived(struct Troop *T){
+	// todo: tof for this part
 	return hypot((T->x)-(T->S2->x), (T->y)-(T->S2->y))<=StateRadius+TroopRadius;
 }
 
@@ -44,7 +48,23 @@ void ProcessTroops(int dt){
 			i--;
 		}
 	}
-	// todo: check collision of troops
+	// todo: this can be done much faster than O(cnttroops^2)
+	for (int i=0; i<cnttroops; i++){
+		int bad=0;
+		for (int j=i+1; j<cnttroops; j++){
+			if (troops[i].owner==troops[j].owner) continue ;
+			if (!collide(troops[i].x-troops[j].x, troops[i].y-troops[j].y, 2*TroopRadius)) continue ;
+			bad=1;
+			cnttroops--;
+			troops[j]=troops[cnttroops];
+			break ;
+		}
+		if (bad){
+			cnttroops--;
+			troops[i]=troops[cnttroops];
+			i--;
+		}
+	}
 }
 
 void DeployTroop(struct State *X, struct State *Y, int ted){ // sends ted troops from X-->Y
@@ -75,6 +95,7 @@ void DeployTroop(struct State *X, struct State *Y, int ted){ // sends ted troops
 struct AttackQuery attackqueries[200];
 
 void AddAttackQuery(struct State *X, struct State *Y){
+	if (X==Y || !X->owner) return ;
 	int ted=(X->cnt)-(X->inq);
 	if (!ted) return ;
 	X->inq+=ted;
