@@ -10,8 +10,8 @@
 
 typedef long long ll;
 
-#define Width 980
-#define Height 660
+#define Width 800
+#define Height 600
 extern const int FPS;
 extern const int StateRadius;
 extern const int MinStateDistance; // maybe change it?
@@ -22,6 +22,11 @@ extern const int InitialSoldierCount; // number of soldiers of each state when t
 extern const int MaxSoldierCount; // number of generated soldiers of a state during game
 extern const int MaxMutualSoldierCount; // number of generated soldiers of a mutual state during game
 extern const double SoldierSpeed; // pixel per second
+extern const int TroopRadius;
+extern const int TroopLinesDistance;
+extern const int MaxParallelTroops;
+extern const int TroopDelayTime; // how long until the next wave of troops get deployed
+extern const double TroopPerSecond; // number of soldiers generated in normal state per second
 
 int swap(int *x, int *y);
 int min(int x, int y);
@@ -60,4 +65,36 @@ int getpartialcolor(struct ColorMixer *colormixer, struct State *state);
 struct ColorMixer* ReadColorConfig(char *filename);
 
 
+struct Troop{
+	double x, y;
+	int owner;
+	double f; // f=1 => the path is complete
+	struct State *S1, *S2;
+};
+extern int cnttroops;
+extern struct Troop troops[10000];
+
+
+
+extern int A[Width][Height];
+void PrepareMap(struct State *states);
+void DrawBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer);
+void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer, TTF_Font *font);
+void DrawTroops(SDL_Renderer *renderer, struct Troop *troops, struct ColorMixer *colormixer);
+
+
+
+struct AttackQuery{
+	struct State *X, *Y;
+	int owner; // who was the owner of X when Query was made
+	int cnt; // sent cnt troops from X-->Y
+	int timer; // how long to wait before send another wave
+};
+extern struct AttackQuery attackqueries[200];
+
+
+void AddAttackQuery(struct State *X, struct State *Y);
+void ProcessTroops(int dt);
+void ProcessAttackQueries(int dt);
+void ProcessStates(struct State *states, int dt);
 

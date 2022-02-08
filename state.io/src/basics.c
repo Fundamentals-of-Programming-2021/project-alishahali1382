@@ -1,9 +1,7 @@
 #include "main.h"
 
 const int FPS = 30;
-const int StateRadius=35;
 const int MinStateDistance=120; // maybe change it?
-const int BorderLineWidth=2; // the thickness of the lines seperating states
 const int MinStates=6, MaxStates=30;
 const int MinPlayers=2, MaxPlayers=6;
 const int InitialSoldierCount=10; // number of soldiers of each state when the game begins
