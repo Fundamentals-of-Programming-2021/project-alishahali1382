@@ -40,6 +40,7 @@ int distance2(int x, int y, int xx, int yy);
 int collide(int dx, int dy, int r);
 void error(const char *error_message);
 int rgb_to_int(int r, int g, int b);
+int IsPointInRect(SDL_Rect rect, int x, int y);
 
 extern int n, m;
 
@@ -105,6 +106,13 @@ void AddAttackQuery(struct State *X, struct State *Y);
 void ProcessTroops(int dt);
 void ProcessAttackQueries(int dt);
 void ProcessStates(struct State *states, int dt);
+
+
+extern const int MenuContinueGameCode;
+extern const int MenuNewGameCode;
+extern const int MenuLeaderboardCode;
+extern const int MenuCreditCode;
+extern const int MenuExitCode;
 
 
 int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer);

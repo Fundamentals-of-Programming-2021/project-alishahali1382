@@ -3,12 +3,11 @@
 int n, m; // n: number of states    m: number of players
 int selected_state=-1; // -1: no state is selected
 
-const int EXIT = -1;
 int GameHandleEvents(SDL_Window *window, struct State *states){
 	SDL_Event event;
 	while (SDL_PollEvent(&event)){
 		if (event.type == SDL_QUIT)
-			return EXIT;
+			return MenuExitCode;
 		if (event.type == SDL_MOUSEBUTTONDOWN){
 			if (event.button.button == SDL_BUTTON_LEFT){
 				int x, y, id=-1;
@@ -53,7 +52,7 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 	int last_tick=SDL_GetTicks();
 	while (1){
 		int start_ticks = SDL_GetTicks();
-		if (GameHandleEvents(window, states)==EXIT) break;
+		if (GameHandleEvents(window, states)==MenuExitCode) break;
 
 		
 		int dt=SDL_GetTicks()-last_tick;

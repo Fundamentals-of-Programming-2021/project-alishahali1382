@@ -31,3 +31,6 @@ void error(const char *error_message){
 	exit(1);
 }
 int rgb_to_int(int r, int g, int b){ return 0xff000000+(b<<16)+(g<<8)+(r);}
+int IsPointInRect(SDL_Rect rect, int x, int y){
+	return rect.x<=x && x<=rect.x+rect.w && rect.y<=y && y<=rect.y+rect.h;
+}
