@@ -52,6 +52,7 @@ void PrepareMap(struct GameMap *map){
 		sumy[A[x][y]]+=y;
 		ted[A[x][y]]++;
 	}
+	if (map->states) free(map->states);
 	map->states=(struct State *) malloc(n*sizeof(struct State));
 	for (int i=0; i<n; i++){
 		// assert(ted[i]);
@@ -117,3 +118,18 @@ void DrawTroops(SDL_Renderer *renderer, struct Troop *troops, struct ColorMixer 
 		filledCircleColor(renderer, troops[i].x, troops[i].y, TroopRadius, colormixer->C[troops[i].owner]);
 	}
 }
+
+void DrawPotions(SDL_Renderer *renderer, struct Potion potions[], struct ColorMixer *colormixer){
+	for (int i=0; i<MAXPOTIONS; i++){
+		if (!potions[i].typ) continue ;
+		if (potions[i].owner)
+			filledCircleColor(renderer, potions[i].x, potions[i].y, PotionResolution/2+10, colormixer->C[potions[i].owner]-0x80000000);
+		
+		// SDL_Rect rect={potions[i].x-PotionResolution/2, potions[i].y-PotionResolution/2, PotionResolution, PotionResolution};
+		// SDL_RenderCopy(renderer, potion_textures[potions[i].typ], 0, &rect);
+		SDL_RenderCopy(renderer, potion_textures[potions[i].typ], 0, &(potions[i].rect));
+
+	}
+}
+
+

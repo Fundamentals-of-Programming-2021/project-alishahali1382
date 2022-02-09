@@ -43,12 +43,24 @@ void SaveMap(struct GameMap *map, char *filename){
 
 void LoadMap(struct GameMap *map, char *filename){
 	FILE *f=fopen(filename, "rb");
-	fread(&(map->n), 4, 1, f);
-	fread(&(map->nn), 4, 1, f);
-	fread(&(map->m), 4, 1, f);
+	int tmp=0;
+	tmp+=fread(&(map->n), 4, 1, f);
+	tmp+=fread(&(map->nn), 4, 1, f);
+	tmp+=fread(&(map->m), 4, 1, f);
+	if (tmp<3){
+		char S[70];
+		sprintf(S, "map file %s not valid :(", filename);
+		error(S);
+	}
 	if (map->pos) free(map->pos);
 	map->pos=(int*)malloc(sizeof(int)*map->nn);
-	fread(map->pos, 4, map->nn, f);
+	tmp=fread(map->pos, 4, map->nn, f);
+	if (tmp<map->nn){
+		char S[70];
+		sprintf(S, "map file %s not valid :(", filename);
+		error(S);
+	}
+	// todo: check distance of states too
 	fclose(f);
 }
 

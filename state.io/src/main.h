@@ -12,6 +12,7 @@ typedef long long ll;
 
 #define Width 1080
 #define Height 660
+#define MAXPOTIONS 5
 extern const int FPS;
 extern const int StateRadius;
 extern const int MinStateDistance; // maybe change it?
@@ -27,6 +28,8 @@ extern const int TroopLinesDistance;
 extern const int MaxParallelTroops;
 extern const int TroopDelayTime; // how long until the next wave of troops get deployed
 extern const double TroopPerSecond; // number of soldiers generated in normal state per second
+extern const int PotionResolution;
+extern const int PotionSpawnDelay;
 
 int swap(int *x, int *y);
 int min(int x, int y);
@@ -87,12 +90,29 @@ extern struct Troop troops[10000];
 
 
 
+struct Potion{
+	int x, y;
+	int typ, owner;
+	int timer; // remaining time of the potion
+	SDL_Rect rect;
+};
+extern struct Potion potions[MAXPOTIONS]; // potions on the screen
+extern SDL_Texture *potion_textures[9];
+extern int potionconfig_t[9];
+extern double potionconfig_x, potionconfig_y, potionconfig_z;
+extern int active_potion[10]; // for players
+
+void ReadPotions(char *filename, SDL_Renderer *renderer);
+void UpdatePotions(int dt);
+void GenerateRandomPotion(struct State *states);
+
+
 extern int A[Width][Height];
 void PrepareMap(struct GameMap *map);
 void DrawBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer);
 void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer, TTF_Font *font);
 void DrawTroops(SDL_Renderer *renderer, struct Troop *troops, struct ColorMixer *colormixer);
-
+void DrawPotions(SDL_Renderer *renderer, struct Potion potions[], struct ColorMixer *colormixer);
 
 
 struct AttackQuery{

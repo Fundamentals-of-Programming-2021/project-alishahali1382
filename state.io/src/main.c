@@ -1,10 +1,6 @@
 #include "main.h"
 
 
-const int MaxParallelTroops=5;
-const int TroopDelayTime=900; // how long until the next wave of troops get deployed
-const double TroopPerSecond=0.86; // number of soldiers generated in normal state per second
-
 
 
 
@@ -18,15 +14,28 @@ int main(){
 	SDL_Window* window = SDL_CreateWindow("state.io", 20, 20, Width, Height, SDL_WINDOW_OPENGL);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
+	ReadPotions("assets/potion-config.txt", renderer);
+
 	struct GameMap map;
 
 
 	map.n=12;
 	map.nn=16;
 	map.m=3;
+	map.pos=0;
+	map.states=0;
 	GenerateRandomMap(&map);
-	// SaveMap(&map, "assets/map1");
-	// LoadMap(&map, "assets/map1");
+	// SaveMap(&map, "assets/maps/map7");
+	LoadMap(&map, "assets/maps/map1");
+
+	// potions[0].x=200;
+	// potions[0].y=250;
+	// SDL_Rect shit={200-PotionResolution/2, 250-PotionResolution/2, PotionResolution, PotionResolution};
+	// potions[0].rect=shit;
+	// // potions[0].owner=1;
+	// potions[0].typ=6;
+	
+
 	MainGameProcess(window, renderer, &map, colormixer);
 	
 
@@ -78,6 +87,11 @@ int main(){
 	}
 	*/
 
+	for (int i=1; i<=8; i++)
+		SDL_DestroyTexture(potion_textures[i]);
+	free(colormixer->C);
+	free(colormixer->minC);
+	free(colormixer->maxC);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();

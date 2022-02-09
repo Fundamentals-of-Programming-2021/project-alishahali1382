@@ -1,6 +1,9 @@
 #include "main.h"
 
 int n, m; // n: number of states    m: number of players
+
+
+
 int selected_state=-1; // -1: no state is selected
 
 int GameHandleEvents(SDL_Window *window, struct State *states){
@@ -61,11 +64,14 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 		ProcessAttackQueries(dt);
 		ProcessTroops(dt);
 		ProcessStates(states, dt);
-
+		if (rand()%(FPS*PotionSpawnDelay)==0)
+			GenerateRandomPotion(states);
+		UpdatePotions(dt);
 		// printf("states[0].cnt=%d\n", states[0].cnt);
 
 		
 		DrawBackGround(renderer, states, colormixer);
+		DrawPotions(renderer, potions, colormixer);
 		DrawTroops(renderer, troops, colormixer);
 		DrawStates(renderer, states, colormixer, font28);
 		
