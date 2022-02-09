@@ -41,7 +41,7 @@ int collide(int dx, int dy, int r);
 void error(const char *error_message);
 int rgb_to_int(int r, int g, int b);
 
-extern int n, nn, m;
+extern int n, m;
 
 struct State{
 	int x, y; // center position
@@ -52,9 +52,16 @@ struct State{
 
 void ProcessStates(struct State *states, int dt);
 
-// int distance_state(struct State *A, struct State *B);
 
-void GenerateRandomMap(struct State *states);
+struct GameMap{
+	int n, nn, m;
+	int *pos; // (x<<16 | y)
+	struct State *states;
+};
+
+void GenerateRandomMap(struct GameMap *map);
+void FreeMap(struct GameMap *map);
+
 
 struct ColorMixer{
 	int blank, empty_state, border_line;
@@ -78,7 +85,7 @@ extern struct Troop troops[10000];
 
 
 extern int A[Width][Height];
-void PrepareMap(struct State *states);
+void PrepareMap(struct GameMap *map);
 void DrawBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer);
 void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer, TTF_Font *font);
 void DrawTroops(SDL_Renderer *renderer, struct Troop *troops, struct ColorMixer *colormixer);
@@ -98,4 +105,3 @@ void AddAttackQuery(struct State *X, struct State *Y);
 void ProcessTroops(int dt);
 void ProcessAttackQueries(int dt);
 void ProcessStates(struct State *states, int dt);
-

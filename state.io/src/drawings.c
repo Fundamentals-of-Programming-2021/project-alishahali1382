@@ -10,12 +10,18 @@ const int BorderLineWidth=2; // the thickness of the lines seperating states
 // 0<=A[x][y]<n : its a state
 // A[x][y]=n    : its a non-playing field
 int A[Width][Height], B[Width][Height]; // B: temp array for making A
-void PrepareMap(struct State *states){
+void PrepareMap(struct GameMap *map){
 	if (!n) error("PrepareMap called with n=0");
+	int nn=map->nn;
+	int X[nn], Y[nn];
+	for (int i=0; i<nn; i++){
+		X[i]=(map->pos[i])>>16;
+		Y[i]=(map->pos[i])^(X[i]<<16);
+	}
 	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++){
 		int bst=-1, val=1e9;
 		for (int i=0; i<nn; i++){
-			int d=distance2(x, y, states[i].x, states[i].y);
+			int d=distance2(x, y, X[i], Y[i]);
 			if (d<val){
 				val=d;
 				bst=i;
@@ -24,6 +30,7 @@ void PrepareMap(struct State *states){
 		assert(bst!=-1);
 		B[x][y]=min(n, bst);
 	}
+	// printf("phase 1 ok\n");
 	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++){
 		if (x<BorderLineWidth || y<BorderLineWidth || Width-BorderLineWidth<=x || Height-BorderLineWidth<=y)
 			A[x][y]=-1;
@@ -45,13 +52,14 @@ void PrepareMap(struct State *states){
 		sumy[A[x][y]]+=y;
 		ted[A[x][y]]++;
 	}
+	map->states=(struct State *) malloc(n*sizeof(struct State));
 	for (int i=0; i<n; i++){
 		// assert(ted[i]);
-		states[i].x=sumx[i]/ted[i];
-		states[i].y=sumy[i]/ted[i];
-		states[i].owner=0;
-		states[i].cnt=InitialSoldierCount;
-		states[i].inq=0;
+		map->states[i].x=sumx[i]/ted[i];
+		map->states[i].y=sumy[i]/ted[i];
+		map->states[i].owner=0;
+		map->states[i].cnt=InitialSoldierCount;
+		map->states[i].inq=0;
 	}
 }
 
