@@ -26,8 +26,54 @@ int main(){
 	map.m=3;
 	GenerateRandomMap(&map);
 	
-	MainMenu(window, renderer);
 	// MainGameProcess(window, renderer, &map, colormixer);
+	
+	int page=MenuMainMenuCode;
+	// page=MenuNewGameCode;
+	while (1){
+		if (page==MenuExitCode)
+			break ;
+		if (page==MenuMainMenuCode){
+			page=MainMenu(window, renderer);
+			continue ;
+		}
+		if (page==MenuContinueGameCode){
+			// todo
+			page=MenuExitCode;
+			continue ;
+		}
+		if (page==MenuNewGameCode){
+			page=NewGameMenu(window, renderer);
+			continue ;
+		}
+		if (page==MenuLeaderboardCode){
+			// todo
+			page=MenuExitCode;
+			continue ;
+		}
+		if (page==MenuCreditCode){
+			// todo
+			page=MenuExitCode;
+			continue ;
+		}
+		if (page==MenuChooseMapCode){
+			// todo
+			page=MenuExitCode;
+			continue ;
+		}
+		if (page==MenuRandomMapCode){
+			// todo
+			page=MenuExitCode;
+			continue ;
+		}
+		if (page==MenuCustomMapCode){
+			// todo
+			page=MenuExitCode;
+			continue ;
+		}
+		assert(0);
+	}
+
 
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);

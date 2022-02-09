@@ -108,14 +108,20 @@ void ProcessAttackQueries(int dt);
 void ProcessStates(struct State *states, int dt);
 
 
+extern const int MenuExitCode;
+extern const int MenuMainMenuCode;
 extern const int MenuContinueGameCode;
 extern const int MenuNewGameCode;
 extern const int MenuLeaderboardCode;
 extern const int MenuCreditCode;
-extern const int MenuExitCode;
+extern const int MenuChooseMapCode;
+extern const int MenuRandomMapCode;
+extern const int MenuCustomMapCode;
 
 
 int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer);
 
 int MainMenu(SDL_Window *window, SDL_Renderer *renderer);
+
+int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer);
 

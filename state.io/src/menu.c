@@ -1,10 +1,14 @@
 #include "main.h"
 
-const int MenuContinueGameCode=1;
-const int MenuNewGameCode=2;
-const int MenuLeaderboardCode=3;
-const int MenuCreditCode=4;
-const int MenuExitCode=5;
+const int MenuExitCode=-1;
+const int MenuMainMenuCode=1;
+const int MenuContinueGameCode=2;
+const int MenuNewGameCode=3;
+const int MenuLeaderboardCode=4;
+const int MenuCreditCode=5;
+const int MenuChooseMapCode=6;
+const int MenuRandomMapCode=7;
+const int MenuCustomMapCode=8;
 
 
 // todo: resize the logo.bmp file
@@ -116,6 +120,81 @@ int MainMenu(SDL_Window *window, SDL_Renderer *renderer){
 			if (IsPointInRect(button_rect[2], x, y)) res = MenuLeaderboardCode;
 			if (IsPointInRect(button_rect[3], x, y)) res = MenuCreditCode;
 			if (IsPointInRect(button_rect[4], x, y)) res = MenuExitCode;
+		}
+		if (event.type == SDL_MOUSEMOTION){
+			int xx, yy, f=0;
+			SDL_GetMouseState(&xx, &yy);
+			for (int i=0; i<cnt; i++){
+				int f0=IsPointInRect(button_rect[i], x, y);
+				int f1=IsPointInRect(button_rect[i], xx, yy);
+				// printf("i=%d f0=%d f1=%d\n", i, f0, f1);
+				if (f0==f1) continue ;
+				f=1;
+				if (!f0 && f1) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
+				if (f0 && !f1) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
+			}
+			// printf("f=%d\n\n", f);
+			if (f){
+				SDL_RenderPresent(renderer);
+				SDL_Delay(100);
+			}
+			x=xx;
+			y=yy;
+		}
+	}
+
+	TTF_CloseFont(font);
+
+	return res;
+}
+
+int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer){
+	// choose map
+	// random map
+	// custom map
+	// back
+	TTF_Font *font=TTF_OpenFont("assets/IRNazaninBold.ttf", 36);
+	if (!font) error("can't open font IRNazaninBold.ttf");
+
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	SDL_RenderClear(renderer);
+
+	int logo_left=DrawLogo(window, renderer); // x: left-point of the logo
+
+	int cnt=4;
+	SDL_Rect button_rect[cnt];
+	char button_text[cnt][20];
+	int tmp=(Height-cnt*ButtonH)/(cnt+1);
+	// printf("tmp=%d\n", tmp);
+
+	strcpy(button_text[0], "Choose Map");
+	strcpy(button_text[1], "Random Map");
+	strcpy(button_text[2], "Custom Map");
+	strcpy(button_text[3], "Back");
+	
+	for (int i=0; i<cnt; i++) 
+		button_rect[i]=DrawButtonCenter(renderer, font, logo_left/2, (i+1)*(tmp+ButtonH)-ButtonH/2, button_text[i]);
+	SDL_RenderPresent(renderer);
+
+
+	int x, y, res=0;
+	SDL_Event event;
+	while (!res){
+		if (!SDL_PollEvent(&event)){
+			// note: maybe reduce the delay time
+			SDL_Delay(50); // reduce CPU-usage while on menu
+			continue ;
+		}
+		if (event.type == SDL_QUIT)
+			return MenuExitCode;
+		
+		// todo: its possible to check both buttondown and buttonup on same button
+		if (event.type == SDL_MOUSEBUTTONDOWN){
+			SDL_GetMouseState(&x, &y);
+			if (IsPointInRect(button_rect[0], x, y)) res = MenuChooseMapCode;
+			if (IsPointInRect(button_rect[1], x, y)) res = MenuRandomMapCode;
+			if (IsPointInRect(button_rect[2], x, y)) res = MenuCustomMapCode;
+			if (IsPointInRect(button_rect[3], x, y)) res = MenuMainMenuCode;
 		}
 		if (event.type == SDL_MOUSEMOTION){
 			int xx, yy, f=0;
