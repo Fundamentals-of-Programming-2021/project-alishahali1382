@@ -10,8 +10,8 @@
 
 typedef long long ll;
 
-#define Width 800
-#define Height 600
+#define Width 1080
+#define Height 660
 extern const int FPS;
 extern const int StateRadius;
 extern const int MinStateDistance; // maybe change it?
@@ -105,3 +105,9 @@ void AddAttackQuery(struct State *X, struct State *Y);
 void ProcessTroops(int dt);
 void ProcessAttackQueries(int dt);
 void ProcessStates(struct State *states, int dt);
+
+
+int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer);
+
+int MainMenu(SDL_Window *window, SDL_Renderer *renderer);
+
