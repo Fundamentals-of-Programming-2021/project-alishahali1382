@@ -62,6 +62,8 @@ struct GameMap{
 
 void GenerateRandomMap(struct GameMap *map);
 void FreeMap(struct GameMap *map);
+void SaveMap(struct GameMap *map, char *filename);
+void LoadMap(struct GameMap *map, char *filename);
 
 
 struct ColorMixer{

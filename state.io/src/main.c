@@ -25,9 +25,12 @@ int main(){
 	map.nn=16;
 	map.m=3;
 	GenerateRandomMap(&map);
+	// SaveMap(&map, "assets/map1");
+	// LoadMap(&map, "assets/map1");
+	MainGameProcess(window, renderer, &map, colormixer);
 	
-	// MainGameProcess(window, renderer, &map, colormixer);
-	
+
+	/*
 	int page=MenuMainMenuCode;
 	// page=MenuNewGameCode;
 	while (1){
@@ -73,7 +76,7 @@ int main(){
 		}
 		assert(0);
 	}
-
+	*/
 
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);

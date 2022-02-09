@@ -32,3 +32,23 @@ void FreeMap(struct GameMap *map){
 	free(map->states);
 }
 
+void SaveMap(struct GameMap *map, char *filename){
+	FILE *f=fopen(filename, "wb");
+	fwrite(&(map->n), 4, 1, f);
+	fwrite(&(map->nn), 4, 1, f);
+	fwrite(&(map->m), 4, 1, f);
+	fwrite(map->pos, 4, map->nn, f);
+	fclose(f);
+}
+
+void LoadMap(struct GameMap *map, char *filename){
+	FILE *f=fopen(filename, "rb");
+	fread(&(map->n), 4, 1, f);
+	fread(&(map->nn), 4, 1, f);
+	fread(&(map->m), 4, 1, f);
+	if (map->pos) free(map->pos);
+	map->pos=(int*)malloc(sizeof(int)*map->nn);
+	fread(map->pos, 4, map->nn, f);
+	fclose(f);
+}
+
