@@ -21,13 +21,15 @@ int DrawLogo(SDL_Window *window, SDL_Renderer *renderer){
 	return x;
 }
 
-const int ButtonW=250, ButtonH=95;
+const int ButtonW=270, ButtonH=95;
+const int ButtonColor=0xff00d0d0;
+const int ButtonColorSelected=0xffd00000;
 
 // (cx, cy): center of button
-SDL_Rect DrawButton(SDL_Renderer *renderer, TTF_Font *font, int cx, int cy, char *text){
+SDL_Rect DrawButtonCenter(SDL_Renderer *renderer, TTF_Font *font, int cx, int cy, char *text){
 	// button background
 	SDL_Rect rect={cx-ButtonW/2, cy-ButtonH/2, ButtonW, ButtonH};
-	SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+	SDL_SetRenderDrawColor(renderer, ButtonColor&255, (ButtonColor>>8)&255, (ButtonColor>>16)&255, 255);
 	SDL_RenderFillRect(renderer, &rect);
 	
 	SDL_Color color={0, 0, 0};
@@ -44,6 +46,25 @@ SDL_Rect DrawButton(SDL_Renderer *renderer, TTF_Font *font, int cx, int cy, char
 	return rect;
 }
 
+SDL_Rect DrawButtonRect(SDL_Renderer *renderer, TTF_Font *font, SDL_Rect *rect, char *text, int col){
+	// button background
+	SDL_SetRenderDrawColor(renderer, col&255, (col>>8)&255, (col>>16)&255, 255);
+	SDL_RenderFillRect(renderer, rect);
+	
+	SDL_Color color={0, 0, 0}; // text color
+	SDL_Surface *text_surface=TTF_RenderText_Solid(font, text, color);
+	SDL_Texture *text_texture=SDL_CreateTextureFromSurface(renderer, text_surface);
+	int w=text_surface->w, h=text_surface->h;
+
+	SDL_Rect dest={rect->x+rect->w/2-w/2, rect->y+rect->h/2-h/2, w, h};
+	SDL_RenderCopy(renderer, text_texture, 0, &dest);
+
+	SDL_FreeSurface(text_surface);
+	SDL_DestroyTexture(text_texture);
+	
+	return *rect;
+}
+
 
 int MainMenu(SDL_Window *window, SDL_Renderer *renderer){
 	// continue game
@@ -51,7 +72,7 @@ int MainMenu(SDL_Window *window, SDL_Renderer *renderer){
 	// scoreboard
 	// credit
 	// exit
-	TTF_Font *font=TTF_OpenFont("assets/IRNazaninBold.ttf", 34);
+	TTF_Font *font=TTF_OpenFont("assets/IRNazaninBold.ttf", 36);
 	if (!font) error("can't open font IRNazaninBold.ttf");
 
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -60,23 +81,28 @@ int MainMenu(SDL_Window *window, SDL_Renderer *renderer){
 	int logo_left=DrawLogo(window, renderer); // x: left-point of the logo
 
 	int cnt=5;
-	SDL_Rect buttons[cnt];
+	SDL_Rect button_rect[cnt];
+	char button_text[cnt][20];
 	int tmp=(Height-cnt*ButtonH)/(cnt+1);
+	// printf("tmp=%d\n", tmp);
 
-	buttons[0]=DrawButton(renderer, font, logo_left/2, 1*(tmp+ButtonH)-ButtonH/2, "Continue Game");
-	buttons[1]=DrawButton(renderer, font, logo_left/2, 2*(tmp+ButtonH)-ButtonH/2, "New Game");
-	buttons[2]=DrawButton(renderer, font, logo_left/2, 3*(tmp+ButtonH)-ButtonH/2, "Leaderboard");
-	buttons[3]=DrawButton(renderer, font, logo_left/2, 4*(tmp+ButtonH)-ButtonH/2, "Credit");
-	buttons[4]=DrawButton(renderer, font, logo_left/2, 5*(tmp+ButtonH)-ButtonH/2, "Exit");
+	strcpy(button_text[0], "Continue Game");
+	strcpy(button_text[1], "New Game");
+	strcpy(button_text[2], "Leaderboard");
+	strcpy(button_text[3], "Credit");
+	strcpy(button_text[4], "Exit");
+
+	for (int i=0; i<cnt; i++) 
+		button_rect[i]=DrawButtonCenter(renderer, font, logo_left/2, (i+1)*(tmp+ButtonH)-ButtonH/2, button_text[i]);
 	SDL_RenderPresent(renderer);
 
-	TTF_CloseFont(font);
 
+	int x, y, res=0;
 	SDL_Event event;
-	while (1){
+	while (!res){
 		if (!SDL_PollEvent(&event)){
 			// note: maybe reduce the delay time
-			SDL_Delay(100); // reduce CPU-usage while on menu
+			SDL_Delay(50); // reduce CPU-usage while on menu
 			continue ;
 		}
 		if (event.type == SDL_QUIT)
@@ -84,13 +110,39 @@ int MainMenu(SDL_Window *window, SDL_Renderer *renderer){
 		
 		// todo: its possible to check both buttondown and buttonup on same button
 		if (event.type == SDL_MOUSEBUTTONDOWN){
-			int x, y;
 			SDL_GetMouseState(&x, &y);
-			if (IsPointInRect(buttons[0], x, y)) return MenuContinueGameCode;
-			if (IsPointInRect(buttons[1], x, y)) return MenuNewGameCode;
-			if (IsPointInRect(buttons[2], x, y)) return MenuLeaderboardCode;
-			if (IsPointInRect(buttons[3], x, y)) return MenuCreditCode;
-			if (IsPointInRect(buttons[4], x, y)) return MenuExitCode;
+			if (IsPointInRect(button_rect[0], x, y)) res = MenuContinueGameCode;
+			if (IsPointInRect(button_rect[1], x, y)) res = MenuNewGameCode;
+			if (IsPointInRect(button_rect[2], x, y)) res = MenuLeaderboardCode;
+			if (IsPointInRect(button_rect[3], x, y)) res = MenuCreditCode;
+			if (IsPointInRect(button_rect[4], x, y)) res = MenuExitCode;
+		}
+		if (event.type == SDL_MOUSEMOTION){
+			int xx, yy, f=0;
+			SDL_GetMouseState(&xx, &yy);
+			for (int i=0; i<cnt; i++){
+				int f0=IsPointInRect(button_rect[i], x, y);
+				int f1=IsPointInRect(button_rect[i], xx, yy);
+				// printf("i=%d f0=%d f1=%d\n", i, f0, f1);
+				if (f0==f1) continue ;
+				f=1;
+				if (!f0 && f1) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
+				if (f0 && !f1) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
+			}
+			// printf("f=%d\n\n", f);
+			if (f){
+				SDL_RenderPresent(renderer);
+				SDL_Delay(100);
+			}
+			x=xx;
+			y=yy;
 		}
 	}
+
+	TTF_CloseFont(font);
+
+	return res;
 }
+
+
+
