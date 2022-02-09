@@ -119,7 +119,7 @@ void DrawTroops(SDL_Renderer *renderer, struct Troop *troops, struct ColorMixer 
 	}
 }
 
-void DrawPotions(SDL_Renderer *renderer, struct Potion potions[], struct ColorMixer *colormixer){
+void DrawPotions(SDL_Renderer *renderer, struct Potion potions[], struct ColorMixer *colormixer, TTF_Font *font){
 	for (int i=0; i<MAXPOTIONS; i++){
 		if (!potions[i].typ) continue ;
 		if (potions[i].owner)
@@ -128,6 +128,21 @@ void DrawPotions(SDL_Renderer *renderer, struct Potion potions[], struct ColorMi
 		// SDL_Rect rect={potions[i].x-PotionResolution/2, potions[i].y-PotionResolution/2, PotionResolution, PotionResolution};
 		// SDL_RenderCopy(renderer, potion_textures[potions[i].typ], 0, &rect);
 		SDL_RenderCopy(renderer, potion_textures[potions[i].typ], 0, &(potions[i].rect));
+
+		if (potionconfig_writepotiontyp){
+			char text[2];
+			sprintf(text, "%d", potions[i].typ);
+			SDL_Color color={0, 0, 0};
+			SDL_Surface *text_surface=TTF_RenderText_Solid(font, text, color);
+			SDL_Texture *text_texture=SDL_CreateTextureFromSurface(renderer, text_surface);
+			int x=potions[i].x, y=potions[i].y, w=text_surface->w, h=text_surface->h;
+			// SDL_Rect dest={x-w/2, y+StateRadius+8, w, h};
+			SDL_Rect dest={x-w/2, y-h/2, w, h};
+			SDL_RenderCopy(renderer, text_texture, 0, &dest);
+
+			SDL_FreeSurface(text_surface);
+			SDL_DestroyTexture(text_texture);
+		}
 
 	}
 }

@@ -98,7 +98,7 @@ struct Potion{
 };
 extern struct Potion potions[MAXPOTIONS]; // potions on the screen
 extern SDL_Texture *potion_textures[9];
-extern int potionconfig_t[9];
+extern int potionconfig_t[9], potionconfig_writepotiontyp;
 extern double potionconfig_x, potionconfig_y, potionconfig_z;
 extern int active_potion[10]; // for players
 
@@ -112,7 +112,7 @@ void PrepareMap(struct GameMap *map);
 void DrawBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer);
 void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer, TTF_Font *font);
 void DrawTroops(SDL_Renderer *renderer, struct Troop *troops, struct ColorMixer *colormixer);
-void DrawPotions(SDL_Renderer *renderer, struct Potion potions[], struct ColorMixer *colormixer);
+void DrawPotions(SDL_Renderer *renderer, struct Potion potions[], struct ColorMixer *colormixer, TTF_Font *font);
 
 
 struct AttackQuery{

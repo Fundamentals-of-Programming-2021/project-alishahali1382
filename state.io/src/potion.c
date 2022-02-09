@@ -1,11 +1,11 @@
 #include "main.h"
 
 const int PotionResolution=60;
-const int PotionSpawnDelay=8;
+const int PotionSpawnDelay=20;
 
 struct Potion potions[MAXPOTIONS];
 SDL_Texture *potion_textures[9];
-int potionconfig_t[9];
+int potionconfig_t[9], potionconfig_writepotiontyp;
 double potionconfig_x, potionconfig_y, potionconfig_z;
 
 int active_potion[10];
@@ -19,6 +19,7 @@ void ReadPotions(char *filename, SDL_Renderer *renderer){
 	fscanf(f, "%lf", &potionconfig_x);
 	fscanf(f, "%lf", &potionconfig_y);
 	fscanf(f, "%lf", &potionconfig_z);
+	fscanf(f, "%d", &potionconfig_writepotiontyp);
 	fclose(f);
 	
 	for (int i=1; i<=8; i++){

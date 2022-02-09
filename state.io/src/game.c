@@ -71,7 +71,7 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 
 		
 		DrawBackGround(renderer, states, colormixer);
-		DrawPotions(renderer, potions, colormixer);
+		DrawPotions(renderer, potions, colormixer, font28);
 		DrawTroops(renderer, troops, colormixer);
 		DrawStates(renderer, states, colormixer, font28);
 		

@@ -22,8 +22,10 @@ void MoveTroop(struct Troop *T, int dt){ // dt: delta-time in miliseconds
 	double dist=hypot(dx, dy);
 	
 	double tmp=zarib*SoldierSpeed*dt/dist/1000;
-	dx=dx/dist*SoldierSpeed*dt/1000;
-	dy=dy/dist*SoldierSpeed*dt/1000;
+	dx=dx*tmp;
+	dy=dy*tmp;
+
+	// printf("%.3f  %.3f  %.3f\n", tmp, dx, dy);
 
 	T->x+=dx;
 	T->y+=dy;
@@ -34,7 +36,7 @@ void ApplyTroopArrival(struct State *S, int x){ // a soldier of player x arrived
 	if (S->owner==x) S->cnt++;
 	else if (S->cnt){
 		// potion5: 
-		if (active_potion[S->owner]==5){
+		if (active_potion[S->owner]==6){
 			S->cnt++;
 			return ;
 		}
