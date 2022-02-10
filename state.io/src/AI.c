@@ -5,9 +5,16 @@ const int AIAttackCoolDown=3000; // how long should a state wait before another 
 int timer[60];
 int attack_player1_timer=0;
 
+void ResetAI(){
+	memset(timer, 0, sizeof(timer));
+	attack_player1_timer=0;
+}
+
 void AI(struct State *states, int dt){
 	attack_player1_timer+=dt;
 	for (int i=0; i<n; i++) timer[i]+=dt;
+
+	// todo: add potion
 
     const int lim = 7;
     int Mx1=-1, id1=-1;

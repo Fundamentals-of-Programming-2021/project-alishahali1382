@@ -39,10 +39,13 @@ SDL_Rect DrawButtonCenter(SDL_Renderer *renderer, TTF_Font *font, int cx, int cy
 	SDL_SetRenderDrawColor(renderer, ButtonColor&255, (ButtonColor>>8)&255, (ButtonColor>>16)&255, 255);
 	SDL_RenderFillRect(renderer, &rect);
 	
+	int f=0;
+	if (!text[0]) text[0]=' ', f=1;
 	SDL_Color color={0, 0, 0};
 	SDL_Surface *text_surface=TTF_RenderText_Solid(font, text, color);
 	SDL_Texture *text_texture=SDL_CreateTextureFromSurface(renderer, text_surface);
 	int w=text_surface->w, h=text_surface->h;
+	if (f) text[0]=' ';
 
 	SDL_Rect dest={cx-w/2, cy-h/2, w, h};
 	SDL_RenderCopy(renderer, text_texture, 0, &dest);
@@ -58,10 +61,13 @@ SDL_Rect DrawButtonRect(SDL_Renderer *renderer, TTF_Font *font, SDL_Rect *rect, 
 	SDL_SetRenderDrawColor(renderer, col&255, (col>>8)&255, (col>>16)&255, 255);
 	SDL_RenderFillRect(renderer, rect);
 	
+	int f=0;
+	if (!text[0]) text[0]=' ', f=1;
 	SDL_Color color={0, 0, 0}; // text color
 	SDL_Surface *text_surface=TTF_RenderText_Solid(font, text, color);
 	SDL_Texture *text_texture=SDL_CreateTextureFromSurface(renderer, text_surface);
 	int w=text_surface->w, h=text_surface->h;
+	if (f) text[0]=' ';
 
 	SDL_Rect dest={rect->x+rect->w/2-w/2, rect->y+rect->h/2-h/2, w, h};
 	SDL_RenderCopy(renderer, text_texture, 0, &dest);
@@ -105,6 +111,7 @@ int MainMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 	int x=0, y=0, res=0;
 	SDL_Event event;
 	while (!res){
+		int render_flag=0;
 		if (!SDL_PollEvent(&event)){
 			// note: maybe reduce the delay time
 			SDL_Delay(50); // reduce CPU-usage while on menu
@@ -130,17 +137,21 @@ int MainMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 				int f1=IsPointInRect(button_rect[i], xx, yy);
 				// printf("i=%d f0=%d f1=%d\n", i, f0, f1);
 				if (f0==f1) continue ;
-				f=1;
-				if (!f0 && f1) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
-				if (f0 && !f1) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
-			}
-			// printf("f=%d\n\n", f);
-			if (f){
-				SDL_RenderPresent(renderer);
-				SDL_Delay(100);
+				render_flag=1;
 			}
 			x=xx;
 			y=yy;
+		}
+		if (render_flag){
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+			SDL_RenderClear(renderer);
+			DrawLogo(window, renderer);
+			for (int i=0; i<cnt; i++){
+				int f1=IsPointInRect(button_rect[i], x, y);
+				if (f1) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
+				else DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
+			}
+			SDL_RenderPresent(renderer);
 		}
 	}
 
@@ -322,6 +333,7 @@ int ChooseMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *ma
 					memset(attackqueries, 0, sizeof(attackqueries));
 					memset(potions, 0, sizeof(potions));
 					cnttroops=0;
+					ResetGame();
 					res=MenuStartGameCode;
 				}
 			}
@@ -435,6 +447,7 @@ int CustomGameMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *m
 			selected_button=0;
 			SDL_GetMouseState(&x, &y);
 			if (IsPointInRect(button_rect[0], x, y)){
+				ResetGame();
 				map->n=n;
 				map->m=m;
 				map->nn=n+nn;
@@ -567,23 +580,108 @@ int CustomGameMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *m
 
 
 int PreviewMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, TTF_Font *font, struct ColorMixer *colormixer){
+	int cnt=5;
+	SDL_Rect button_rect[cnt];
+	char button_text[cnt][20];
+	int tmp=(Height-cnt*ButtonH)/(cnt+1);
+
+	
+	char mapname[16]="";
+	int mapname_sz=0;
+	strcpy(button_text[0], mapname);
+	strcpy(button_text[1], "Save Map");
+	strcpy(button_text[2], "Start Game");
+	strcpy(button_text[3], "Back");
+	strcpy(button_text[4], "Main Menu");
+
+
+	for (int i=0; i<cnt; i++) 
+		button_rect[i]=DrawButtonCenter(renderer, font, Width/2, (i+1)*(tmp+ButtonH)-ButtonH/2, button_text[i]);
+	
 	PrepareMap(map);
-	int res=0;
-	return MenuStartGameCode;
-	// todo
-	/*
-	while (1){
-		DrawBackGround(renderer, map->states, colormixer);
+	DrawBackGround(renderer, map->states, colormixer);
+	DrawStates(renderer, map->states, colormixer);
+	SDL_RenderPresent(renderer);
+
+	int res=0, menu_on=0;
+	int x=0, y=0;
+	while (!res){
+		int render_flag=0;
 		SDL_Event event;
 		while (SDL_PollEvent(&event)){
-			if (event.type == SDL_QUIT)
-				return MenuExitCode;
-			
+			if (event.type == SDL_QUIT){
+				res=MenuExitCode;
+				break ;
+			}
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE){
+				res=MenuNewGameCode;
+				break ;
+			}			
+			if (!menu_on){
+				if (event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN){
+					render_flag=1;
+					menu_on=1;
+					SDL_StartTextInput();
+				}
+			}
+			else{
+				if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_BACKSPACE){
+					if (mapname_sz){
+						mapname[--mapname_sz]=0;
+						render_flag=1;
+					}
+				}
+				if (event.type == SDL_TEXTINPUT){
+					for (int i=0; i<32 && event.text.text[i] && mapname_sz<15; i++){
+						char ch=event.text.text[i];
+						if (ch==' ' || ch=='_') ch=='-';
+						if (ch=='-' || isalpha(ch) || isdigit(ch)){
+							mapname[mapname_sz++]=ch;
+							render_flag=1;
+						}
+					}
+				}
+				if (event.type == SDL_MOUSEMOTION){
+					int xx, yy;
+					SDL_GetMouseState(&xx, &yy);
+					for (int i=1; i<cnt; i++){
+						int f0=IsPointInRect(button_rect[i], x, y);
+						int f1=IsPointInRect(button_rect[i], xx, yy);
+						if (f0!=f1) render_flag=1;
+					}
+					x=xx;
+					y=yy;
+				}
+				if (event.type == SDL_MOUSEBUTTONDOWN){
+					SDL_GetMouseState(&x, &y);
+					if (IsPointInRect(button_rect[1], x, y) && mapname_sz){
+						char S[70]="assets/maps/";
+						strcat(S, mapname);
+						SaveMap(map, S);
+					}
+					if (IsPointInRect(button_rect[2], x, y)) res=MenuStartGameCode;
+					if (IsPointInRect(button_rect[3], x, y)) menu_on=0, render_flag=1;
+					if (IsPointInRect(button_rect[4], x, y)) res=MenuMainMenuCode;
+				}
+			}
 		}
-		
-		SDL_RenderPresent(renderer);
-	}*/
-
+		if (render_flag){
+			DrawBackGround(renderer, map->states, colormixer);
+			DrawStates(renderer, map->states, colormixer);
+			if (menu_on){
+				strcpy(button_text[0], mapname);
+				boxColor(renderer, 0, 0, Width, Height, 0x6fffffff);
+				for (int i=0; i<cnt; i++){
+					int f1=IsPointInRect(button_rect[i], x, y);
+					if (f1 && i) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
+					else DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
+				}
+			}
+			SDL_RenderPresent(renderer);
+		}
+	}
+	if (menu_on) SDL_StopTextInput();
+	return res;
 }
 
 

@@ -79,4 +79,6 @@ void ResetGame(){
 	memset(troops, 0, sizeof(troops));
 	memset(attackqueries, 0, sizeof(attackqueries));
 	memset(potions, 0, sizeof(potions));
+	memset(active_potion, 0, sizeof(active_potion));
+	ResetAI();
 }

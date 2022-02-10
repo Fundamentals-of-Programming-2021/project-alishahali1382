@@ -47,6 +47,7 @@ int main(){
 	
 	
 	int page=MenuMainMenuCode;
+	// page=MenuNewGameCode;
 	while (1){
 		if (page==MenuExitCode)
 			break ;
@@ -93,11 +94,11 @@ int main(){
 			continue ;
 		}
 		if (page==MenuStartGameCode){
+			ResetGame();
 			page=MainGameProcess(window, renderer, &map, colormixer, username);
 			continue ;
 		}
 		if (page==MenuPreviewMapCode){
-			printf("map preview\n");
 			page=PreviewMapMenu(window, renderer, &map, font36, colormixer);
 			continue ;
 		}
