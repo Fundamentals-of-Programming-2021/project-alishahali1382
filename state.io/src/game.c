@@ -31,7 +31,7 @@ int GameHandleEvents(SDL_Window *window, struct State *states){
 					selected_state=id;
 				}
 				else if (selected_state!=id){
-					AddAttackQuery(states+selected_state, states+id);
+					AddAttackQuery(states, selected_state, id);
 					selected_state=-1;
 				}
 				// if selected_state==id: do nothing
@@ -44,30 +44,29 @@ int GameHandleEvents(SDL_Window *window, struct State *states){
 	return 0;
 }
 
-int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer){
+int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer, char username[32]){
 	TTF_Font *font28=TTF_OpenFont("assets/IRNazaninBold.ttf", 28);
 	PrepareMap(map);
-	
 	struct State *states=map->states;
 	for (int i=0; i<m; i++) states[i].owner=i+1, states[i].cnt=InitialSoldierCount;
-
+	
 	int begining_of_time = SDL_GetTicks();
 	int last_tick=SDL_GetTicks();
 	while (1){
 		int start_ticks = SDL_GetTicks();
-		if (GameHandleEvents(window, states)==MenuExitCode) break;
+		if (GameHandleEvents(window, states)==MenuExitCode){
+			return MenuExitCode;
+		}
 
-		
 		int dt=SDL_GetTicks()-last_tick;
 		last_tick+=dt;
 		
-		ProcessAttackQueries(dt);
-		ProcessTroops(dt);
+		ProcessAttackQueries(states, dt);
+		ProcessTroops(states, dt);
 		ProcessStates(states, dt);
 		if (rand()%(FPS*PotionSpawnDelay)==0)
 			GenerateRandomPotion(states);
 		UpdatePotions(dt);
-		// printf("states[0].cnt=%d\n", states[0].cnt);
 
 		
 		DrawBackGround(renderer, states, colormixer);
@@ -85,7 +84,8 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 		
 		SDL_Delay(max(1000/FPS-(SDL_GetTicks()-start_ticks), 0));
 	}
+	// SaveGame(map, "admin", "assets/saved-game");
+	
 	FreeMap(map);
 	TTF_CloseFont(font28);
-
 }

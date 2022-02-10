@@ -13,6 +13,8 @@ typedef long long ll;
 #define Width 1080
 #define Height 660
 #define MAXPOTIONS 5
+#define MAXTROOPS 10000
+#define MAXATTACKQUERIES 200
 extern const int FPS;
 extern const int StateRadius;
 extern const int MinStateDistance; // maybe change it?
@@ -68,6 +70,9 @@ void FreeMap(struct GameMap *map);
 void SaveMap(struct GameMap *map, char *filename);
 void LoadMap(struct GameMap *map, char *filename);
 
+void SaveGame(struct GameMap *map, char username[32], char *filename);
+void LoadGame(struct GameMap *map, char username[32], char *filename);
+
 
 struct ColorMixer{
 	int blank, empty_state, border_line;
@@ -83,7 +88,8 @@ struct Troop{
 	double x, y;
 	int owner;
 	double f; // f=1 => the path is complete
-	struct State *S1, *S2;
+	// struct State *S1, *S2;
+	int S1, S2;
 };
 extern int cnttroops;
 extern struct Troop troops[10000];
@@ -116,7 +122,8 @@ void DrawPotions(SDL_Renderer *renderer, struct Potion potions[], struct ColorMi
 
 
 struct AttackQuery{
-	struct State *X, *Y;
+	// struct State *X, *Y;
+	int X, Y;
 	int owner; // who was the owner of X when Query was made
 	int cnt; // sent cnt troops from X-->Y
 	int timer; // how long to wait before send another wave
@@ -124,9 +131,9 @@ struct AttackQuery{
 extern struct AttackQuery attackqueries[200];
 
 
-void AddAttackQuery(struct State *X, struct State *Y);
-void ProcessTroops(int dt);
-void ProcessAttackQueries(int dt);
+void AddAttackQuery(struct State *states, int X, int Y);
+void ProcessTroops(struct State *states, int dt);
+void ProcessAttackQueries(struct State *states, int dt);
 void ProcessStates(struct State *states, int dt);
 
 
@@ -141,7 +148,7 @@ extern const int MenuRandomMapCode;
 extern const int MenuCustomMapCode;
 
 
-int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer);
+int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer, char username[32]);
 
 int MainMenu(SDL_Window *window, SDL_Renderer *renderer);
 

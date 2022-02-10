@@ -28,18 +28,19 @@ int main(){
 	// SaveMap(&map, "assets/maps/map7");
 	LoadMap(&map, "assets/maps/map1");
 
-	potions[0].x=200;
-	potions[0].y=250;
-	SDL_Rect shit={200-PotionResolution/2, 250-PotionResolution/2, PotionResolution, PotionResolution};
-	potions[0].rect=shit;
-	// potions[0].owner=1;
-	potions[0].typ=1;
+	// potions[0].x=200;
+	// potions[0].y=250;
+	// SDL_Rect shit={200-PotionResolution/2, 250-PotionResolution/2, PotionResolution, PotionResolution};
+	// potions[0].rect=shit;
+	// // potions[0].owner=1;
+	// potions[0].typ=1;
+
+	char username[32];
+	LoadGame(&map, username, "assets/saved-game");
+
+	MainGameProcess(window, renderer, &map, colormixer, username);
 	
 
-	MainGameProcess(window, renderer, &map, colormixer);
-	
-
-	/*
 	int page=MenuMainMenuCode;
 	// page=MenuNewGameCode;
 	while (1){
@@ -85,7 +86,7 @@ int main(){
 		}
 		assert(0);
 	}
-	*/
+	
 
 	for (int i=1; i<=8; i++)
 		SDL_DestroyTexture(potion_textures[i]);

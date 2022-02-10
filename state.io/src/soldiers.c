@@ -6,9 +6,10 @@ const double TroopPerSecond=0.86; // number of soldiers generated in normal stat
 
 
 int cnttroops;
-struct Troop troops[10000];
+struct Troop troops[MAXTROOPS];
 
-void MoveTroop(struct Troop *T, int dt){ // dt: delta-time in miliseconds
+void MoveTroop(struct State *states, struct Troop *T, int dt){ // dt: delta-time in miliseconds
+	// printf("shit1\n");
 	// if speed-potion was active change zarib
 	int owner=T->owner;
 	double zarib=1;
@@ -17,8 +18,10 @@ void MoveTroop(struct Troop *T, int dt){ // dt: delta-time in miliseconds
 		if (active_potion[i]==3) zarib=0;
 		if (active_potion[i]==4) zarib*=potionconfig_y;
 	}
-	
-	double dx=T->S2->x - T->S1->x, dy=T->S2->y - T->S1->y;
+	// printf("shit2\n");
+	double dx=states[T->S2].x - states[T->S1].x;
+	// printf("shit3\n");
+	double dy=states[T->S2].y - states[T->S1].y;
 	double dist=hypot(dx, dy);
 	
 	double tmp=zarib*SoldierSpeed*dt/dist/1000;
@@ -54,16 +57,16 @@ void ApplyTroopArrival(struct State *S, int x){ // a soldier of player x arrived
 	}
 }
 
-int isTroopArrived(struct Troop *T){
+int isTroopArrived(struct State *states, struct Troop *T){
 	// todo: tof for this part
-	return hypot((T->x)-(T->S2->x), (T->y)-(T->S2->y))<=StateRadius+TroopRadius;
+	return hypot((T->x)-(states[T->S2].x), (T->y)-(states[T->S2].y))<=StateRadius+TroopRadius;
 }
 
-void ProcessTroops(int dt){
+void ProcessTroops(struct State *states, int dt){
 	for (int i=0; i<cnttroops; i++){
-		MoveTroop(troops+i, dt);
-		if (troops[i].f>=1 || isTroopArrived(troops+i)){
-			ApplyTroopArrival(troops[i].S2, troops[i].owner);
+		MoveTroop(states, troops+i, dt);
+		if (troops[i].f>=1 || isTroopArrived(states, troops+i)){
+			ApplyTroopArrival(states + troops[i].S2, troops[i].owner);
 			troops[i]=troops[--cnttroops];
 			i--;
 		}
@@ -87,10 +90,10 @@ void ProcessTroops(int dt){
 	}
 }
 
-void DeployTroop(struct State *X, struct State *Y, int ted){ // sends ted troops from X-->Y
-	double x=X->x, y=X->y;
+void DeployTroop(struct State *states, int X, int Y, int ted){ // sends ted troops from X-->Y
+	double x=states[X].x, y=states[X].y;
 	// printf("x0=%f   y0=%f\n", x, y);
-	double dx=Y->x - x, dy=Y->y - y;
+	double dx=states[Y].x - x, dy=states[Y].y - y;
 	double dist=hypot(dx, dy);
 	dx=dx/dist, dy=dy/dist;
 	x+=dx*StateRadius, y+=dy*StateRadius;
@@ -102,7 +105,7 @@ void DeployTroop(struct State *X, struct State *Y, int ted){ // sends ted troops
 		troops[cnttroops].S1=X;
 		troops[cnttroops].S2=Y;
 		troops[cnttroops].f=0;
-		troops[cnttroops].owner=X->owner;
+		troops[cnttroops].owner=states[X].owner;
 		troops[cnttroops].x=x;
 		troops[cnttroops].y=y;
 		cnttroops++;
@@ -112,19 +115,19 @@ void DeployTroop(struct State *X, struct State *Y, int ted){ // sends ted troops
 }
 
 
-struct AttackQuery attackqueries[200];
+struct AttackQuery attackqueries[MAXATTACKQUERIES];
 
-void AddAttackQuery(struct State *X, struct State *Y){
-	if (X==Y || !X->owner) return ;
+void AddAttackQuery(struct State *states, int X, int Y){
+	if (X==Y || !states[X].owner) return ;
 
 	// potion6: enemies cant attack your states:
-	if (X->owner!=Y->owner && active_potion[Y->owner]==6) return ;
+	if (states[X].owner!=states[Y].owner && active_potion[states[Y].owner]==6) return ;
 	
-	int ted=(X->cnt)-(X->inq);
+	int ted=(states[X].cnt)-(states[X].inq);
 	if (!ted) return ;
-	X->inq+=ted;
+	states[X].inq+=ted;
 	for (int i=0; i<200; i++) if (!attackqueries[i].cnt){
-		attackqueries[i].owner=X->owner;
+		attackqueries[i].owner=states[X].owner;
 		attackqueries[i].cnt=ted;
 		attackqueries[i].X=X;
 		attackqueries[i].Y=Y;
@@ -135,28 +138,28 @@ void AddAttackQuery(struct State *X, struct State *Y){
 	error("too many attack queries!");
 }
 
-void ProcessAttackQueries(int dt){
+void ProcessAttackQueries(struct State *states, int dt){
 	for (int i=0; i<200; i++){
 		struct AttackQuery *Q=attackqueries+i;
-		if (!Q->cnt || Q->owner!=Q->X->owner){
+		if (!Q->cnt || Q->owner!=states[Q->X].owner){
 			Q->cnt=0;
 			continue ;
 		}
 		
 		// potion6: enemies cant attack your states:
-		if (Q->X->owner!=Q->Y->owner && active_potion[Q->Y->owner]==6) return ;
+		if (states[Q->X].owner!=states[Q->Y].owner && active_potion[states[Q->Y].owner]==6) return ;
 	
 
 		Q->timer-=dt;
 		if (Q->timer > 0) continue ;
 		Q->timer+=TroopDelayTime;
 		
-		Q->cnt=min(Q->cnt, Q->X->inq);
+		Q->cnt=min(Q->cnt, states[Q->X].inq);
 		int ted=min(Q->cnt, MaxParallelTroops);
 		Q->cnt-=ted;
-		Q->X->cnt-=ted;
-		Q->X->inq-=ted;
-		DeployTroop(Q->X, Q->Y, ted);
+		states[Q->X].cnt-=ted;
+		states[Q->X].inq-=ted;
+		DeployTroop(states, Q->X, Q->Y, ted);
 	}
 }
 

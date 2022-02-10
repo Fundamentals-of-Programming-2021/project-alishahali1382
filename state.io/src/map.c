@@ -1,9 +1,9 @@
 #include "main.h"
 
-int distance_state(struct State *A, struct State *B){ // squared distance
-	int dx=(A->x)-(B->x), dy=(A->y)-(B->y);
-	return dx*dx+dy*dy;
-}
+// int distance_state(struct State *A, struct State *B){ // squared distance
+// 	int dx=(A->x)-(B->x), dy=(A->y)-(B->y);
+// 	return dx*dx+dy*dy;
+// }
 
 void GenerateRandomMap(struct GameMap *map){
 	n=map->n;
