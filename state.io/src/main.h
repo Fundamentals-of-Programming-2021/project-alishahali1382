@@ -47,6 +47,7 @@ int collide(int dx, int dy, int r);
 void error(const char *error_message);
 int rgb_to_int(int r, int g, int b);
 int IsPointInRect(SDL_Rect rect, int x, int y);
+void SortStrings(char S[][50], int n);
 
 extern int n, m;
 
@@ -117,7 +118,8 @@ void GenerateRandomPotion(struct State *states);
 extern int A[Width][Height];
 void PrepareMap(struct GameMap *map);
 void DrawBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer);
-void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer, TTF_Font *font);
+void WriteStateCounts(SDL_Renderer *renderer, struct State *states, TTF_Font *font);
+void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer);
 void DrawTroops(SDL_Renderer *renderer, struct Troop *troops, struct ColorMixer *colormixer);
 void DrawPotions(SDL_Renderer *renderer, struct Potion potions[], struct ColorMixer *colormixer, TTF_Font *font);
 
@@ -147,11 +149,13 @@ extern const int MenuCreditCode;
 extern const int MenuChooseMapCode;
 extern const int MenuRandomMapCode;
 extern const int MenuCustomMapCode;
+extern const int MenuStartGameCode;
 
 
 int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer, char username[32]);
 
-int MainMenu(SDL_Window *window, SDL_Renderer *renderer);
+int MainMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font);
+int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font);
+int ChooseMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, TTF_Font *font);
 
-int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer);
 

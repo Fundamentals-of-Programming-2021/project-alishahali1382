@@ -34,3 +34,13 @@ int rgb_to_int(int r, int g, int b){ return 0xff000000+(b<<16)+(g<<8)+(r);}
 int IsPointInRect(SDL_Rect rect, int x, int y){
 	return rect.x<=x && x<=rect.x+rect.w && rect.y<=y && y<=rect.y+rect.h;
 }
+void swapch(char *x, char *y){ *x^=*y, *y^=*x, *x^=*y;}
+void SortStrings(char S[][50], int n){
+	for (int i=1; i<n; i++){
+		for (int j=i; j; j--){
+			if (strcmp(S[j-1], S[j])<=0) break ;
+			for (int k=0; k<50; k++) swapch(S[j-1]+k, S[j]+k);
+		}
+	}
+}
+

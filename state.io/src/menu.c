@@ -1,4 +1,5 @@
 #include "main.h"
+#include <dirent.h>
 
 const int MenuExitCode=-1;
 const int MenuMainMenuCode=1;
@@ -9,6 +10,7 @@ const int MenuCreditCode=5;
 const int MenuChooseMapCode=6;
 const int MenuRandomMapCode=7;
 const int MenuCustomMapCode=8;
+const int MenuStartGameCode=9;
 
 
 // todo: resize the logo.bmp file
@@ -70,14 +72,12 @@ SDL_Rect DrawButtonRect(SDL_Renderer *renderer, TTF_Font *font, SDL_Rect *rect, 
 }
 
 
-int MainMenu(SDL_Window *window, SDL_Renderer *renderer){
+int MainMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 	// continue game
 	// new game
 	// scoreboard
 	// credit
 	// exit
-	TTF_Font *font=TTF_OpenFont("assets/IRNazaninBold.ttf", 36);
-	if (!font) error("can't open font IRNazaninBold.ttf");
 
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
@@ -143,18 +143,14 @@ int MainMenu(SDL_Window *window, SDL_Renderer *renderer){
 		}
 	}
 
-	TTF_CloseFont(font);
-
 	return res;
 }
 
-int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer){
+int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 	// choose map
 	// random map
 	// custom map
 	// back
-	TTF_Font *font=TTF_OpenFont("assets/IRNazaninBold.ttf", 36);
-	if (!font) error("can't open font IRNazaninBold.ttf");
 
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
@@ -216,9 +212,135 @@ int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer){
 			x=xx;
 			y=yy;
 		}
+		if (event.type == SDL_KEYDOWN){
+			if (event.key.keysym.sym == SDLK_ESCAPE){
+				res = MenuMainMenuCode;
+			}
+		}
 	}
 
-	TTF_CloseFont(font);
+	return res;
+}
+
+int ChooseMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, TTF_Font *font){
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	SDL_RenderClear(renderer);
+
+	int logo_left=DrawLogo(window, renderer); // x: left-point of the logo
+
+	
+	int ted=0;
+	char button_text[31][50]; // no more than 30 maps can be loaded
+	
+
+	DIR *dd;
+	struct dirent *dir;
+	dd=opendir("./assets/maps");
+	if (!dd) error("can't open directory ./assets/maps");
+	while ((dir=readdir(dd))!=NULL && ted<30){
+		// printf("shit1\n");
+		if (dir->d_name[0]=='.') continue ;
+		strcpy(button_text[ted++], dir->d_name);
+		// printf("map-file=%s\n", dir->d_name);
+	}
+	closedir(dd);
+	
+	SortStrings(button_text, ted);
+	strcpy(button_text[ted++], "Back");
+
+	int cnt=min(6, ted);
+	SDL_Rect button_rect[cnt];
+	int tmp=(Height-cnt*ButtonH)/(cnt+1);
+	// printf("tmp=%d\n", tmp);
+
+
+	for (int i=0; i<cnt; i++) 
+		button_rect[i]=DrawButtonCenter(renderer, font, logo_left/2, (i+1)*(tmp+ButtonH)-ButtonH/2, button_text[i]);
+	
+	SDL_RenderPresent(renderer);
+
+	int x=0, y=0, scroll=0, res=0, dscroll=0;
+	SDL_Event event;
+	while (!res){
+		dscroll=0;
+		if (!SDL_PollEvent(&event)){
+			// note: maybe reduce the delay time
+			SDL_Delay(50); // reduce CPU-usage while on menu
+			continue ;
+		}
+		if (event.type == SDL_QUIT)
+			return MenuExitCode;
+		
+		if (event.type == SDL_MOUSEBUTTONDOWN){
+			SDL_GetMouseState(&x, &y);
+			for (int i=0; i<cnt; i++) if (IsPointInRect(button_rect[i], x, y)){
+				if (scroll+i==ted-1) res=MenuNewGameCode;
+				else{
+					char S[70];
+					sprintf(S, "assets/maps/%s", button_text[scroll+i]);
+					LoadMap(map, S);
+					res=MenuStartGameCode;
+				}
+			}
+		}
+		if (event.type == SDL_MOUSEMOTION){
+			int xx, yy, f=0;
+			SDL_GetMouseState(&xx, &yy);
+			for (int i=0; i<cnt; i++){
+				int f0=IsPointInRect(button_rect[i], x, y);
+				int f1=IsPointInRect(button_rect[i], xx, yy);
+				// printf("i=%d f0=%d f1=%d\n", i, f0, f1);
+				if (f0==f1) continue ;
+				f=1;
+				// if (f1) DrawButtonRect(renderer, font, button_rect+i, button_text[scroll+i], ButtonColorSelected);
+				// else DrawButtonRect(renderer, font, button_rect+i, button_text[scroll+i], ButtonColor);
+			}
+			x=xx;
+			y=yy;
+			if (f){
+				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+				SDL_RenderClear(renderer);
+				DrawLogo(window, renderer);
+				for (int i=0; i<cnt; i++){
+					int f1=IsPointInRect(button_rect[i], x, y);
+					if (f1) DrawButtonRect(renderer, font, button_rect+i, button_text[scroll+i], ButtonColorSelected);
+					else DrawButtonRect(renderer, font, button_rect+i, button_text[scroll+i], ButtonColor);
+				}
+				SDL_RenderPresent(renderer);
+				SDL_Delay(100);
+			}
+		}
+		if (event.type == SDL_KEYDOWN){
+			if (event.key.keysym.sym == SDLK_ESCAPE){
+				res = MenuMainMenuCode;
+			}
+			if (event.key.keysym.sym == SDLK_UP){
+				dscroll=-1;
+			}
+			if (event.key.keysym.sym == SDLK_DOWN){
+				dscroll=+1;
+			}
+		}
+		if (event.type == SDL_MOUSEWHEEL){
+			if (event.wheel.y<0) dscroll=+1;
+			if (event.wheel.y>0) dscroll=-1;
+		}
+		int f=0;
+		if (dscroll==+1 && scroll+cnt<ted) scroll++, f=1;
+		if (dscroll==-1 && scroll) scroll--, f=1;
+		if (f){
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+			SDL_RenderClear(renderer);
+			DrawLogo(window, renderer);
+			for (int i=0; i<cnt; i++){
+				int f1=IsPointInRect(button_rect[i], x, y);
+				if (f1) DrawButtonRect(renderer, font, button_rect+i, button_text[scroll+i], ButtonColorSelected);
+				else DrawButtonRect(renderer, font, button_rect+i, button_text[scroll+i], ButtonColor);
+			}
+			SDL_RenderPresent(renderer);
+			SDL_Delay(100);
+		}
+	}
 
 	return res;
 }

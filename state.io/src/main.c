@@ -11,19 +11,22 @@ int main(){
 	struct ColorMixer *colormixer = ReadColorConfig("assets/color-config.txt");
 	if (SDL_Init(SDL_INIT_VIDEO)<0) error(SDL_GetError());
 	if (TTF_Init()<0) error(SDL_GetError());
+	
+	TTF_Font *font36=TTF_OpenFont("assets/IRNazaninBold.ttf", 36);
+	if (!font36) error("can't open font IRNazaninBold.ttf");
+	
 	SDL_Window* window = SDL_CreateWindow("state.io", 20, 20, Width, Height, SDL_WINDOW_OPENGL);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
 	ReadPotions("assets/potion-config.txt", renderer);
 
 	struct GameMap map;
-
+	map.pos=0;
+	map.states=0;
 
 	map.n=12;
 	map.nn=16;
 	map.m=3;
-	map.pos=0;
-	map.states=0;
 	GenerateRandomMap(&map);
 	// SaveMap(&map, "assets/maps/map7");
 	LoadMap(&map, "assets/maps/map1");
@@ -35,11 +38,11 @@ int main(){
 	// // potions[0].owner=1;
 	// potions[0].typ=1;
 
-	char username[32];
-	LoadGame(&map, username, "assets/saved-game");
+	// LoadGame(&map, username, "assets/saved-game");
 
-	MainGameProcess(window, renderer, &map, colormixer, username);
+	// MainGameProcess(window, renderer, &map, colormixer, username);
 	
+	char username[32];
 
 	int page=MenuMainMenuCode;
 	// page=MenuNewGameCode;
@@ -47,7 +50,7 @@ int main(){
 		if (page==MenuExitCode)
 			break ;
 		if (page==MenuMainMenuCode){
-			page=MainMenu(window, renderer);
+			page=MainMenu(window, renderer, font36);
 			continue ;
 		}
 		if (page==MenuContinueGameCode){
@@ -56,7 +59,7 @@ int main(){
 			continue ;
 		}
 		if (page==MenuNewGameCode){
-			page=NewGameMenu(window, renderer);
+			page=NewGameMenu(window, renderer, font36);
 			continue ;
 		}
 		if (page==MenuLeaderboardCode){
@@ -70,8 +73,7 @@ int main(){
 			continue ;
 		}
 		if (page==MenuChooseMapCode){
-			// todo
-			page=MenuExitCode;
+			page=ChooseMapMenu(window, renderer, &map, font36);
 			continue ;
 		}
 		if (page==MenuRandomMapCode){
@@ -84,7 +86,11 @@ int main(){
 			page=MenuExitCode;
 			continue ;
 		}
-		assert(0);
+		if (page==MenuStartGameCode){
+			page=MainGameProcess(window, renderer, &map, colormixer, username);
+			continue ;
+		}
+		error("unexpected exit-code from a menu ?!");
 	}
 	
 	if (map.pos) free(map.pos);
@@ -95,6 +101,7 @@ int main(){
 	free(colormixer->minC);
 	free(colormixer->maxC);
 	free(colormixer);
+	TTF_CloseFont(font36);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();

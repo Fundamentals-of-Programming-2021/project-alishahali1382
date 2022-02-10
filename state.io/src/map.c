@@ -30,6 +30,8 @@ void GenerateRandomMap(struct GameMap *map){
 void FreeMap(struct GameMap *map){
 	free(map->pos);
 	free(map->states);
+	map->pos = NULL;
+	map->states = NULL;
 }
 
 void SaveMap(struct GameMap *map, char *filename){

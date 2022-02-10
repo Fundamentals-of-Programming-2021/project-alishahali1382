@@ -40,23 +40,31 @@ int GameHandleEvents(SDL_Window *window, struct State *states){
 				selected_state=-1;
 			}
 		}
+		if (event.type == SDL_KEYDOWN){
+			if (event.key.keysym.sym == SDLK_ESCAPE){
+				return MenuMainMenuCode;
+			}
+		}
 	}
 	return 0;
 }
 
 int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer, char username[32]){
 	TTF_Font *font28=TTF_OpenFont("assets/IRNazaninBold.ttf", 28);
+	printf("before PrapareMap\n");
+	fflush(0);
+	
 	PrepareMap(map);
 	struct State *states=map->states;
 	for (int i=0; i<m; i++) states[i].owner=i+1, states[i].cnt=InitialSoldierCount;
 	
 	int begining_of_time = SDL_GetTicks();
 	int last_tick=begining_of_time;
-	int auto_save_timer=0;
-	while (1){
+	int auto_save_timer=0, res=0;
+	while (!res){
 		int start_ticks = SDL_GetTicks();
-		if (GameHandleEvents(window, states)==MenuExitCode){
-			return MenuExitCode;
+		if (res=GameHandleEvents(window, states)){
+			break ;
 		}
 
 		int dt=SDL_GetTicks()-last_tick;
@@ -69,6 +77,11 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 			GenerateRandomPotion(states);
 		UpdatePotions(dt);
 
+
+		// todo: check for win/lose here
+
+
+
 		if ((auto_save_timer+=dt)>=AutoSaveTime){
 			auto_save_timer-=AutoSaveTime;
 			SaveGame(map, username, "assets/saved-game");
@@ -77,15 +90,16 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 		
 		DrawBackGround(renderer, states, colormixer);
 		DrawPotions(renderer, potions, colormixer, font28);
+		DrawStates(renderer, states, colormixer);
 		DrawTroops(renderer, troops, colormixer);
-		DrawStates(renderer, states, colormixer, font28);
+		WriteStateCounts(renderer, states, font28);
 		// todo: a blend line between mouse and selected state
 		
-		char* buffer = malloc(sizeof(char) * 80);
+		char buffer[100];
 		sprintf(buffer, "elapsed time: %dms   FPS: %d", start_ticks-begining_of_time, min(FPS, 1000/max(SDL_GetTicks()-start_ticks, 1)));
 		stringRGBA(renderer, 5, 5, buffer, 0, 0, 255, 255);
-		free(buffer);
 		
+
 		SDL_RenderPresent(renderer);
 		
 		SDL_Delay(max(1000/FPS-(SDL_GetTicks()-start_ticks), 0));
@@ -94,4 +108,7 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 	
 	FreeMap(map);
 	TTF_CloseFont(font28);
+	return res;
 }
+
+

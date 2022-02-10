@@ -12,6 +12,7 @@ const int BorderLineWidth=2; // the thickness of the lines seperating states
 int A[Width][Height], B[Width][Height]; // B: temp array for making A
 void PrepareMap(struct GameMap *map){
 	if (!n) error("PrepareMap called with n=0");
+	printf("plase 0 ok\n");
 	int nn=map->nn;
 	int X[nn], Y[nn];
 	for (int i=0; i<nn; i++){
@@ -30,7 +31,6 @@ void PrepareMap(struct GameMap *map){
 		assert(bst!=-1);
 		B[x][y]=min(n, bst);
 	}
-	// printf("phase 1 ok\n");
 	for (int x=0; x<Width; x++) for (int y=0; y<Height; y++){
 		if (x<BorderLineWidth || y<BorderLineWidth || Width-BorderLineWidth<=x || Height-BorderLineWidth<=y)
 			A[x][y]=-1;
@@ -43,6 +43,8 @@ void PrepareMap(struct GameMap *map){
 			}
 		}
 	}
+	printf("phase 1 ok\n");
+	fflush(stdout);
 	ll sumx[n], sumy[n], ted[n];
 	memset(sumx, 0, sizeof(sumx));
 	memset(sumy, 0, sizeof(sumy));
@@ -52,6 +54,8 @@ void PrepareMap(struct GameMap *map){
 		sumy[A[x][y]]+=y;
 		ted[A[x][y]]++;
 	}
+	printf("phase 2 ok\n");
+	fflush(stdout);
 	if (map->states) free(map->states);
 	map->states=(struct State *) malloc(n*sizeof(struct State));
 	memset(map->states, 0, n*sizeof(struct State));
@@ -63,6 +67,8 @@ void PrepareMap(struct GameMap *map){
 		map->states[i].cnt=InitialSoldierCount;
 		// map->states[i].inq=0;
 	}
+	printf("phase 3 ok\n");
+
 }
 
 void DrawBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer){
@@ -84,10 +90,9 @@ void DrawBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMi
 	SDL_DestroyTexture(texture);
 }
 
-void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer, TTF_Font *font){
+void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer){
 	for (int i=0; i<n; i++){
-		int owner=states[i].owner;
-		if (!owner){
+		if (!states[i].owner){
 			filledCircleColor(renderer, states[i].x, states[i].y, StateRadius, 0xbfffffff);
 		}
 		else{
@@ -96,6 +101,12 @@ void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer 
 			// filledCircleColor(renderer, states[i].x, states[i].y, StateRadius, colormixer->C[states[i].owner]);
 			// circleColor(renderer, states[i].x, states[i].y, StateRadius, colormixer->C[states[i].owner]);
 		}
+	}
+}
+
+void WriteStateCounts(SDL_Renderer *renderer, struct State *states, TTF_Font *font){
+	for (int i=0; i<n; i++){
+		int owner=states[i].owner;
 		// char *text=(char*)malloc(5*sizeof(char));
 		char text[5]="";
 		sprintf(text, "%d", states[i].cnt);
