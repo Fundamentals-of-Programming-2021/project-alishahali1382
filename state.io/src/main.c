@@ -77,17 +77,24 @@ int main(){
 			continue ;
 		}
 		if (page==MenuRandomMapCode){
-			// todo
-			page=MenuExitCode;
+			map.m=rand2(2, 7);
+			map.n=rand2(m, 17);
+			map.nn=rand2(n, n+6);
+			GenerateRandomMap(&map);
+			page=MenuPreviewMapCode;
 			continue ;
 		}
 		if (page==MenuCustomMapCode){
-			// todo
-			page=MenuExitCode;
+			page=CustomGameMenu(window, renderer, &map, font36);
 			continue ;
 		}
 		if (page==MenuStartGameCode){
 			page=MainGameProcess(window, renderer, &map, colormixer, username);
+			continue ;
+		}
+		if (page==MenuPreviewMapCode){
+			// todo
+			page=MenuExitCode;
 			continue ;
 		}
 		error("unexpected exit-code from a menu ?!");

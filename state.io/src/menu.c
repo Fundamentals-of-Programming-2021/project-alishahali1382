@@ -11,6 +11,7 @@ const int MenuChooseMapCode=6;
 const int MenuRandomMapCode=7;
 const int MenuCustomMapCode=8;
 const int MenuStartGameCode=9;
+const int MenuPreviewMapCode=10;
 
 
 // todo: resize the logo.bmp file
@@ -146,6 +147,7 @@ int MainMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 	return res;
 }
 
+
 int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 	// choose map
 	// random map
@@ -221,6 +223,7 @@ int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 
 	return res;
 }
+
 
 int ChooseMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, TTF_Font *font){
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -316,7 +319,7 @@ int ChooseMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *ma
 		}
 		if (event.type == SDL_KEYDOWN){
 			if (event.key.keysym.sym == SDLK_ESCAPE){
-				res = MenuMainMenuCode;
+				res = MenuNewGameCode;
 			}
 			if (event.key.keysym.sym == SDLK_UP){
 				dscroll=-1;
@@ -348,6 +351,184 @@ int ChooseMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *ma
 
 	return res;
 }
+
+
+int CustomGameMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, TTF_Font *font){
+	// Start Game
+	// states=
+	// players=
+	// empty states=
+	// back
+
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	SDL_RenderClear(renderer);
+
+	int logo_left=DrawLogo(window, renderer); // x: left-point of the logo
+
+	int cnt=5;
+	SDL_Rect button_rect[cnt];
+	char button_text[cnt][20];
+	int tmp=(Height-cnt*ButtonH)/(cnt+1);
+	// printf("tmp=%d\n", tmp);
+	
+	strcpy(button_text[0], "Start Game");
+	strcpy(button_text[4], "Back");
+	int n=8, m=2, nn=2;
+	sprintf(button_text[1], "states= %d", n);
+	sprintf(button_text[2], "players= %d", m);
+	sprintf(button_text[3], "empty states= %d", nn);
+	for (int i=0; i<cnt; i++)
+		button_rect[i]=DrawButtonCenter(renderer, font, logo_left/2, (i+1)*(tmp+ButtonH)-ButtonH/2, button_text[i]);
+	SDL_RenderPresent(renderer);		// todo: its possible to check both buttondown and buttonup on same button
+
+
+
+	int x=0, y=0, res=0, selected_button=0;
+	SDL_Event event;
+	while (!res){
+		if (!SDL_PollEvent(&event)){
+			// note: maybe reduce the delay time
+			SDL_Delay(50); // reduce CPU-usage while on menu
+			continue ;
+		}
+		if (event.type == SDL_QUIT)
+			return MenuExitCode;
+		
+		if (event.type == SDL_MOUSEBUTTONDOWN){
+			int tmp=selected_button;
+			selected_button=0;
+			SDL_GetMouseState(&x, &y);
+			if (IsPointInRect(button_rect[0], x, y)){
+				map->n=n;
+				map->m=m;
+				map->nn=n+nn;
+				GenerateRandomMap(map);
+				res = MenuPreviewMapCode;
+			}
+			if (IsPointInRect(button_rect[1], x, y)) selected_button = 1;
+			if (IsPointInRect(button_rect[2], x, y)) selected_button = 2;
+			if (IsPointInRect(button_rect[3], x, y)) selected_button = 3;
+			if (IsPointInRect(button_rect[4], x, y)) res = MenuNewGameCode;
+
+			SDL_GetMouseState(&x, &y);
+			if (tmp!=selected_button){
+				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+				SDL_RenderClear(renderer);
+				DrawLogo(window, renderer);
+				for (int i=0; i<cnt; i++){
+					int f1=IsPointInRect(button_rect[i], x, y);
+					if (i==0 || i==4){
+						if (f1) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
+						else DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
+					}
+					else{
+						if (selected_button==i) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
+						else DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
+					}
+				}
+				SDL_RenderPresent(renderer);
+				SDL_Delay(50);
+			}
+		}
+		if (event.type == SDL_MOUSEMOTION){
+			int xx, yy, f=0;
+			SDL_GetMouseState(&xx, &yy);
+			for (int i=0; i<cnt; i++) if (i==0 || i==4){
+				int f0=IsPointInRect(button_rect[i], x, y);
+				int f1=IsPointInRect(button_rect[i], xx, yy);
+				if (f0==f1) continue ;
+				f=1;
+			}
+			x=xx;
+			y=yy;
+			if (f){
+				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+				SDL_RenderClear(renderer);
+				DrawLogo(window, renderer);
+				for (int i=0; i<cnt; i++){
+					int f1=IsPointInRect(button_rect[i], x, y);
+					if (i==0 || i==4){
+						if (f1) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
+						else DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
+					}
+					else{
+						if (selected_button==i) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
+						else DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
+					}
+				}
+				SDL_RenderPresent(renderer);
+				SDL_Delay(50);
+			}
+		}
+		int f=0;
+		int dscroll=0;
+		if (event.type == SDL_KEYDOWN){
+			if (event.key.keysym.sym == SDLK_ESCAPE){
+				res = MenuNewGameCode;
+			}
+			if (event.key.keysym.sym == SDLK_UP){
+				dscroll=+1;
+			}
+			if (event.key.keysym.sym == SDLK_DOWN){
+				dscroll=-1;
+			}
+			if (event.key.keysym.sym == SDLK_TAB){
+				selected_button=(selected_button+1)%4;
+				f=1;
+			}
+		}
+		if (event.type == SDL_MOUSEWHEEL){
+			if (event.wheel.y<0) dscroll=-1;
+			if (event.wheel.y>0) dscroll=+1;
+		}
+
+
+		if (!selected_button && !f) continue ;
+		
+		if (selected_button==1){
+			// note: maybe remove upper-limit for n
+			if (dscroll==+1 && n<16) n++, f=1;
+			if (dscroll==-1 && n-1>=m) n--, f=1;
+		}
+		if (selected_button==2){
+			if (dscroll==+1 && m<MaxPlayers && m+1<=n) m++, f=1;
+			if (dscroll==-1 && m>2) m--, f=1;
+		}
+		if (selected_button==3){
+			// note: maybe remove upper-limit for nn
+			if (dscroll==+1 && nn<6) nn++, f=1;
+			if (dscroll==-1 && nn>0) nn--, f=1;
+		}
+
+		if (f){
+			sprintf(button_text[1], "states= %d", n);
+			sprintf(button_text[2], "players= %d", m);
+			sprintf(button_text[3], "empty states= %d", nn);
+
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+			SDL_RenderClear(renderer);
+			DrawLogo(window, renderer);
+			for (int i=0; i<cnt; i++){
+				int f1=IsPointInRect(button_rect[i], x, y);
+				if (i==0 || i==4){
+					if (f1) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
+					else DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
+				}
+				else{
+					if (selected_button==i) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
+					else DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
+				}
+			}
+			SDL_RenderPresent(renderer);
+			SDL_Delay(50);
+		}
+
+		
+	}
+
+	return res;
+}
+
 
 
 

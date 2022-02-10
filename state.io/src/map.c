@@ -8,7 +8,7 @@
 void GenerateRandomMap(struct GameMap *map){
 	n=map->n;
 	m=map->m;
-	int nn=map->nn;
+	int nn=map->nn, tries=0;
 	map->pos=(int*)malloc(nn*sizeof(int));
 	for (int i=0; i<nn; i++){
 		int x=rand2(MinStateDistance/2, Width-MinStateDistance/2);
@@ -20,6 +20,8 @@ void GenerateRandomMap(struct GameMap *map){
 				bad=1;
 		}
 		if (bad){
+			tries++;
+			if (tries>=200) error("can't generate map with these limits");
 			i--;
 			continue ;
 		}
