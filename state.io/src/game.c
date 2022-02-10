@@ -72,13 +72,16 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 		int dt=SDL_GetTicks()-last_tick;
 		last_tick+=dt;
 		
+		printf("\nbefore 1\n");
+		AI(states, dt);
+		printf("before 2\n");
+
 		ProcessAttackQueries(states, dt);
 		ProcessTroops(states, dt);
 		ProcessStates(states, dt);
 		if (rand()%(FPS*PotionSpawnDelay)==0)
 			GenerateRandomPotion(states);
 		UpdatePotions(dt);
-
 
 		// todo: check for win/lose here
 

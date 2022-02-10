@@ -194,9 +194,9 @@ int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, char username[], TTF
 		// todo: its possible to check both buttondown and buttonup on same button
 		if (event.type == SDL_MOUSEBUTTONDOWN){
 			SDL_GetMouseState(&x, &y);
-			if (IsPointInRect(button_rect[1], x, y)) res = MenuChooseMapCode;
-			if (IsPointInRect(button_rect[2], x, y)) res = MenuRandomMapCode;
-			if (IsPointInRect(button_rect[3], x, y)) res = MenuCustomMapCode;
+			if (IsPointInRect(button_rect[1], x, y) && username_sz) res = MenuChooseMapCode;
+			if (IsPointInRect(button_rect[2], x, y) && username_sz) res = MenuRandomMapCode;
+			if (IsPointInRect(button_rect[3], x, y) && username_sz) res = MenuCustomMapCode;
 			if (IsPointInRect(button_rect[4], x, y)) res = MenuMainMenuCode;
 		}
 		if (event.type == SDL_MOUSEMOTION){
@@ -566,5 +566,24 @@ int CustomGameMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *m
 }
 
 
+int PreviewMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, TTF_Font *font, struct ColorMixer *colormixer){
+	PrepareMap(map);
+	int res=0;
+	return MenuStartGameCode;
+	// todo
+	/*
+	while (1){
+		DrawBackGround(renderer, map->states, colormixer);
+		SDL_Event event;
+		while (SDL_PollEvent(&event)){
+			if (event.type == SDL_QUIT)
+				return MenuExitCode;
+			
+		}
+		
+		SDL_RenderPresent(renderer);
+	}*/
+
+}
 
 

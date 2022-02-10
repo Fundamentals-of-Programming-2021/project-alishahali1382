@@ -51,14 +51,13 @@ void PrepareMap(struct GameMap *map){
 		sumy[A[x][y]]+=y;
 		ted[A[x][y]]++;
 	}
-	if (map->states) free(map->states);
-	map->states=(struct State *) malloc(n*sizeof(struct State));
-	memset(map->states, 0, n*sizeof(struct State));
+	// if (map->states) free(map->states);
+	// map->states=(struct State *) malloc(n*sizeof(struct State));
+	// memset(map->states, 0, n*sizeof(struct State));
 	for (int i=0; i<n; i++){
 		// assert(ted[i]);
 		map->states[i].x=sumx[i]/ted[i];
 		map->states[i].y=sumy[i]/ted[i];
-		map->states[i].cnt=InitialSoldierCount;
 	}
 }
 

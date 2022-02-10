@@ -2,7 +2,7 @@
 
 const int MaxParallelTroops=5;
 const int TroopDelayTime=900; // how long until the next wave of troops get deployed
-const double TroopPerSecond=0.86; // number of soldiers generated in normal state per second
+const double TroopPerSecond=0.72; // number of soldiers generated in normal state per second
 
 
 int cnttroops;
@@ -46,8 +46,10 @@ void ApplyTroopArrival(struct State *S, int x){ // a soldier of player x arrived
 
 		if (S->cnt == S->inq) S->inq--;
 		S->cnt--;
-		// when you are under attack, you dont re-generate soldiers:
-		S->cnt2=0;
+
+		// note: when you are under attack, you dont re-generate soldiers:
+		// if (S->cnt2 > .5) S->cnt2/=2;
+		// S->cnt2=0;
 	}
 	else{
 		// note: maybe change here later
@@ -126,7 +128,7 @@ void AddAttackQuery(struct State *states, int X, int Y){
 	int ted=(states[X].cnt)-(states[X].inq);
 	if (!ted) return ;
 	states[X].inq+=ted;
-	for (int i=0; i<200; i++) if (!attackqueries[i].cnt){
+	for (int i=0; i<MAXATTACKQUERIES; i++) if (!attackqueries[i].cnt){
 		attackqueries[i].owner=states[X].owner;
 		attackqueries[i].cnt=ted;
 		attackqueries[i].X=X;
@@ -139,7 +141,7 @@ void AddAttackQuery(struct State *states, int X, int Y){
 }
 
 void ProcessAttackQueries(struct State *states, int dt){
-	for (int i=0; i<200; i++){
+	for (int i=0; i<MAXATTACKQUERIES; i++){
 		struct AttackQuery *Q=attackqueries+i;
 		if (!Q->cnt || Q->owner!=states[Q->X].owner){
 			Q->cnt=0;
@@ -147,8 +149,13 @@ void ProcessAttackQueries(struct State *states, int dt){
 		}
 		
 		// potion6: enemies cant attack your states:
-		if (states[Q->X].owner!=states[Q->Y].owner && active_potion[states[Q->Y].owner]==6) return ;
-	
+		if (states[Q->X].owner!=states[Q->Y].owner && active_potion[states[Q->Y].owner]==6){
+			states[Q->X].inq-=Q->cnt;
+			states[Q->X].inq=0;
+			Q->X = Q->Y = Q->timer = Q->owner = Q->cnt = 0;
+			continue ;
+
+		}
 
 		Q->timer-=dt;
 		if (Q->timer > 0) continue ;

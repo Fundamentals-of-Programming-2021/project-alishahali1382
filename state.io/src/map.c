@@ -1,9 +1,5 @@
 #include "main.h"
 
-// int distance_state(struct State *A, struct State *B){ // squared distance
-// 	int dx=(A->x)-(B->x), dy=(A->y)-(B->y);
-// 	return dx*dx+dy*dy;
-// }
 
 void GenerateRandomMap(struct GameMap *map){
 	n=map->n;
@@ -64,6 +60,15 @@ void LoadMap(struct GameMap *map, char *filename){
 		sprintf(S, "map file %s not valid :(", filename);
 		error(S);
 	}
+
+	if (map->states) free(map->states);
+	map->states=(struct State *)malloc(sizeof(struct State)*map->n);
+	memset(map->states, 0, n*sizeof(struct State));
+	for (int i=0; i<n; i++)
+		map->states[i].cnt=InitialSoldierCount;
+	for (int i=0; i<m; i++)
+		map->states[i].owner=i+1;
+
 	// todo: check distance of states too
 	fclose(f);
 }

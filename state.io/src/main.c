@@ -43,9 +43,9 @@ int main(){
 
 	// MainGameProcess(window, renderer, &map, colormixer, username);
 	
-	char username[32];
-	memset(username, 0, sizeof(username));
-
+	char username[]="admin";
+	
+	
 	int page=MenuMainMenuCode;
 	while (1){
 		if (page==MenuExitCode)
@@ -94,8 +94,8 @@ int main(){
 			continue ;
 		}
 		if (page==MenuPreviewMapCode){
-			// todo
-			page=MenuExitCode;
+			printf("map preview\n");
+			page=PreviewMapMenu(window, renderer, &map, font36, colormixer);
 			continue ;
 		}
 		error("unexpected exit-code from a menu ?!");
