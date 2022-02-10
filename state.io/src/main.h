@@ -155,8 +155,9 @@ extern const int MenuPreviewMapCode;
 
 int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer, char username[32]);
 
+
 int MainMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font);
-int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font);
+int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, char username[], TTF_Font *font);
 int ChooseMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, TTF_Font *font);
 int CustomGameMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, TTF_Font *font);
 

@@ -68,3 +68,5 @@ void LoadMap(struct GameMap *map, char *filename){
 	fclose(f);
 }
 
+
+

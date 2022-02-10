@@ -148,7 +148,8 @@ int MainMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 }
 
 
-int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
+int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, char username[], TTF_Font *font){
+	// username
 	// choose map
 	// random map
 	// custom map
@@ -159,25 +160,29 @@ int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 
 	int logo_left=DrawLogo(window, renderer); // x: left-point of the logo
 
-	int cnt=4;
+	int cnt=5;
 	SDL_Rect button_rect[cnt];
 	char button_text[cnt][20];
 	int tmp=(Height-cnt*ButtonH)/(cnt+1);
 	// printf("tmp=%d\n", tmp);
 
-	strcpy(button_text[0], "Choose Map");
-	strcpy(button_text[1], "Random Map");
-	strcpy(button_text[2], "Custom Map");
-	strcpy(button_text[3], "Back");
+	int username_sz=strlen(username);
+	sprintf(button_text[0], "@%s", username);
+	strcpy(button_text[1], "Choose Map");
+	strcpy(button_text[2], "Random Map");
+	strcpy(button_text[3], "Custom Map");
+	strcpy(button_text[4], "Back");
 	
 	for (int i=0; i<cnt; i++) 
 		button_rect[i]=DrawButtonCenter(renderer, font, logo_left/2, (i+1)*(tmp+ButtonH)-ButtonH/2, button_text[i]);
 	SDL_RenderPresent(renderer);
 
-
+	SDL_StartTextInput();
+	
 	int x=0, y=0, res=0;
 	SDL_Event event;
 	while (!res){
+		int render_flag=0;
 		if (!SDL_PollEvent(&event)){
 			// note: maybe reduce the delay time
 			SDL_Delay(50); // reduce CPU-usage while on menu
@@ -189,37 +194,68 @@ int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 		// todo: its possible to check both buttondown and buttonup on same button
 		if (event.type == SDL_MOUSEBUTTONDOWN){
 			SDL_GetMouseState(&x, &y);
-			if (IsPointInRect(button_rect[0], x, y)) res = MenuChooseMapCode;
-			if (IsPointInRect(button_rect[1], x, y)) res = MenuRandomMapCode;
-			if (IsPointInRect(button_rect[2], x, y)) res = MenuCustomMapCode;
-			if (IsPointInRect(button_rect[3], x, y)) res = MenuMainMenuCode;
+			if (IsPointInRect(button_rect[1], x, y)) res = MenuChooseMapCode;
+			if (IsPointInRect(button_rect[2], x, y)) res = MenuRandomMapCode;
+			if (IsPointInRect(button_rect[3], x, y)) res = MenuCustomMapCode;
+			if (IsPointInRect(button_rect[4], x, y)) res = MenuMainMenuCode;
 		}
 		if (event.type == SDL_MOUSEMOTION){
 			int xx, yy, f=0;
 			SDL_GetMouseState(&xx, &yy);
-			for (int i=0; i<cnt; i++){
+			for (int i=1; i<cnt; i++){
 				int f0=IsPointInRect(button_rect[i], x, y);
 				int f1=IsPointInRect(button_rect[i], xx, yy);
-				// printf("i=%d f0=%d f1=%d\n", i, f0, f1);
 				if (f0==f1) continue ;
 				f=1;
-				if (!f0 && f1) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
-				if (f0 && !f1) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
-			}
-			// printf("f=%d\n\n", f);
-			if (f){
-				SDL_RenderPresent(renderer);
-				SDL_Delay(100);
 			}
 			x=xx;
 			y=yy;
+			if (f) render_flag=1;
 		}
 		if (event.type == SDL_KEYDOWN){
 			if (event.key.keysym.sym == SDLK_ESCAPE){
 				res = MenuMainMenuCode;
 			}
+			if (event.key.keysym.sym == SDLK_BACKSPACE){
+				// printf("backspace pressed  username_sz=%d\n", username_sz);
+				if (username_sz){
+					username[--username_sz]=0;
+					render_flag=1;
+				}
+				// printf("username_sz=%d\n\n", username_sz);
+			}
+		}
+		if (event.type == SDL_TEXTINPUT){
+			for (int i=0; i<32 && event.text.text[i] && username_sz<14; i++){
+				char ch=event.text.text[i];
+				if (ch==' ' || ch=='_') ch=='-';
+				if (ch=='-' || isalpha(ch) || isdigit(ch)){
+					username[username_sz++]=ch;
+					render_flag=1;
+				}
+			}
+		}
+
+		if (render_flag){
+			sprintf(button_text[0], "@%s", username);
+			
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+			SDL_RenderClear(renderer);
+			DrawLogo(window, renderer);
+			for (int i=0; i<cnt; i++){
+				int f1=IsPointInRect(button_rect[i], x, y);
+				if (f1 && i) DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColorSelected);
+				else DrawButtonRect(renderer, font, button_rect+i, button_text[i], ButtonColor);
+			}
+			SDL_RenderPresent(renderer);
+			SDL_Delay(100);
+			
+			// printf("rendered!\n");
+			// printf("%s\n\n", button_text[0]);
+
 		}
 	}
+	SDL_StopTextInput();
 
 	return res;
 }

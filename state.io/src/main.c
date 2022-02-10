@@ -44,6 +44,7 @@ int main(){
 	// MainGameProcess(window, renderer, &map, colormixer, username);
 	
 	char username[32];
+	memset(username, 0, sizeof(username));
 
 	int page=MenuMainMenuCode;
 	while (1){
@@ -59,7 +60,7 @@ int main(){
 			continue ;
 		}
 		if (page==MenuNewGameCode){
-			page=NewGameMenu(window, renderer, font36);
+			page=NewGameMenu(window, renderer, username, font36);
 			continue ;
 		}
 		if (page==MenuLeaderboardCode){
