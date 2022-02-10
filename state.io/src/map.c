@@ -23,6 +23,14 @@ void GenerateRandomMap(struct GameMap *map){
 		}
 		map->pos[i]=(x<<16|y);
 	}
+	if (map->states) free(map->states);
+	map->states=(struct State *)malloc(sizeof(struct State)*map->n);
+	memset(map->states, 0, n*sizeof(struct State));
+	for (int i=0; i<n; i++)
+		map->states[i].cnt=InitialSoldierCount;
+	for (int i=0; i<m; i++)
+		map->states[i].owner=i+1;
+	
 }
 
 void FreeMap(struct GameMap *map){
@@ -60,6 +68,8 @@ void LoadMap(struct GameMap *map, char *filename){
 		sprintf(S, "map file %s not valid :(", filename);
 		error(S);
 	}
+	fclose(f);
+	// todo: check distance of states too
 
 	if (map->states) free(map->states);
 	map->states=(struct State *)malloc(sizeof(struct State)*map->n);
@@ -69,8 +79,6 @@ void LoadMap(struct GameMap *map, char *filename){
 	for (int i=0; i<m; i++)
 		map->states[i].owner=i+1;
 
-	// todo: check distance of states too
-	fclose(f);
 }
 
 

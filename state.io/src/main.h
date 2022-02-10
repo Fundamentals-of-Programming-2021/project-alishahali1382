@@ -140,6 +140,7 @@ void ProcessAttackQueries(struct State *states, int dt);
 void ProcessStates(struct State *states, int dt);
 void AI(struct State *states, int dt);
 
+void ResetGame();
 
 extern const int MenuExitCode;
 extern const int MenuMainMenuCode;

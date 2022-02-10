@@ -1,6 +1,14 @@
 #include "main.h"
 
+const int AIAttackCoolDown=3000; // how long should a state wait before another attack
+
+int timer[60];
+int attack_player1_timer=0;
+
 void AI(struct State *states, int dt){
+	attack_player1_timer+=dt;
+	for (int i=0; i<n; i++) timer[i]+=dt;
+
     const int lim = 7;
     int Mx1=-1, id1=-1;
     int cnt=0;
@@ -40,7 +48,10 @@ void AI(struct State *states, int dt){
 			for(int I=0; I<n; I++){
 				if(states[I].owner==i){
 					mark=1;
-					AddAttackQuery(states, I, j);
+					if (timer[I]>=AIAttackCoolDown){
+						AddAttackQuery(states, I, j);
+						timer[I]=0;
+					}
 				}
 			}
 		}
@@ -59,11 +70,16 @@ void AI(struct State *states, int dt){
 	int nemone=-1;
 	for(int i=0; i<n; i++){
 		int now=states[i].cnt-states[i].inq;
-		if (states[i].owner==ID && now>=lim)
+		if (states[i].owner==ID && now>=lim){
+			if (timer[i]<AIAttackCoolDown) continue ;
 			AddAttackQuery(states, i, Id1);
+			timer[i]=0;
+		}
 	}
-	// int hala = rand2(0, n);
-	// if(hala != 0) return ;
+	
+	// attack player 1 :evil_face:
+	if (attack_player1_timer<5000) return ;
+	attack_player1_timer-=5000;
 	
 	int f=0;
 	for (int i=0; i<n; i++){

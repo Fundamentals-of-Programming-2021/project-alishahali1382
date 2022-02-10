@@ -51,8 +51,6 @@ int GameHandleEvents(SDL_Window *window, struct State *states){
 
 int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer, char username[32]){
 	TTF_Font *font28=TTF_OpenFont("assets/IRNazaninBold.ttf", 28);
-	// printf("before PrapareMap\n");
-	// fflush(0);
 	
 	PrepareMap(map);
 	struct State *states=map->states;
@@ -72,10 +70,7 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 		int dt=SDL_GetTicks()-last_tick;
 		last_tick+=dt;
 		
-		printf("\nbefore 1\n");
 		AI(states, dt);
-		printf("before 2\n");
-
 		ProcessAttackQueries(states, dt);
 		ProcessTroops(states, dt);
 		ProcessStates(states, dt);

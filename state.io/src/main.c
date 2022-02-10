@@ -6,8 +6,8 @@
 
 
 int main(){
-	// srand(0);
-	srand(time(0));
+	srand(0);
+	// srand(time(0));
 	struct ColorMixer *colormixer = ReadColorConfig("assets/color-config.txt");
 	if (SDL_Init(SDL_INIT_VIDEO)<0) error(SDL_GetError());
 	if (TTF_Init()<0) error(SDL_GetError());
@@ -43,7 +43,7 @@ int main(){
 
 	// MainGameProcess(window, renderer, &map, colormixer, username);
 	
-	char username[]="admin";
+	char username[32]="admin";
 	
 	
 	int page=MenuMainMenuCode;
@@ -74,18 +74,21 @@ int main(){
 			continue ;
 		}
 		if (page==MenuChooseMapCode){
+			ResetGame();
 			page=ChooseMapMenu(window, renderer, &map, font36);
 			continue ;
 		}
 		if (page==MenuRandomMapCode){
+			ResetGame();
 			map.m=rand2(2, 7);
-			map.n=rand2(m, 17);
-			map.nn=rand2(n, n+6);
+			map.n=rand2(map.m, 17);
+			map.nn=rand2(map.n, map.n+6);
 			GenerateRandomMap(&map);
 			page=MenuPreviewMapCode;
 			continue ;
 		}
 		if (page==MenuCustomMapCode){
+			ResetGame();
 			page=CustomGameMenu(window, renderer, &map, font36);
 			continue ;
 		}

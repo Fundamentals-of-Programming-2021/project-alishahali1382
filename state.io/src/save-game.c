@@ -75,3 +75,8 @@ void LoadGame(struct GameMap *map, char username[32], char *filename){
 	fclose(f);
 }
 
+void ResetGame(){
+	memset(troops, 0, sizeof(troops));
+	memset(attackqueries, 0, sizeof(attackqueries));
+	memset(potions, 0, sizeof(potions));
+}

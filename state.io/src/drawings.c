@@ -27,6 +27,7 @@ void PrepareMap(struct GameMap *map){
 				bst=i;
 			}
 		}
+		if (bst==-1) error("wtf?! PrepareMap::bst == -1");
 		assert(bst!=-1);
 		B[x][y]=min(n, bst);
 	}
@@ -51,10 +52,20 @@ void PrepareMap(struct GameMap *map){
 		sumy[A[x][y]]+=y;
 		ted[A[x][y]]++;
 	}
-	// if (map->states) free(map->states);
-	// map->states=(struct State *) malloc(n*sizeof(struct State));
-	// memset(map->states, 0, n*sizeof(struct State));
 	for (int i=0; i<n; i++){
+		if (!ted[i]){
+			// map->states[i].x=X[i];
+			// map->states[i].y=Y[i];
+			// continue ;
+			printf("\n\n\n");
+			printf("i=%d\n", i);
+			printf("n=%d\n", n);
+			printf("nn=%d\n", nn);
+			
+			SaveMap(map, "assets/maps/error-map");
+			for (int j=0; j<nn; j++) printf("(%d, %d)\n", X[j], Y[j]);
+			error("PrepareMap::ted[i] = 0  ?!?!");
+		}
 		// assert(ted[i]);
 		map->states[i].x=sumx[i]/ted[i];
 		map->states[i].y=sumy[i]/ted[i];
