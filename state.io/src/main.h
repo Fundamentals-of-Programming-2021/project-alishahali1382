@@ -32,6 +32,7 @@ extern const int TroopDelayTime; // how long until the next wave of troops get d
 extern const double TroopPerSecond; // number of soldiers generated in normal state per second
 extern const int PotionResolution;
 extern const int PotionSpawnDelay;
+extern const int AutoSaveTime; // every AutoSaveTime miliseconds the game is saved
 
 int swap(int *x, int *y);
 int min(int x, int y);

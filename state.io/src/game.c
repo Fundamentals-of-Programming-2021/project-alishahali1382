@@ -51,7 +51,8 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 	for (int i=0; i<m; i++) states[i].owner=i+1, states[i].cnt=InitialSoldierCount;
 	
 	int begining_of_time = SDL_GetTicks();
-	int last_tick=SDL_GetTicks();
+	int last_tick=begining_of_time;
+	int auto_save_timer=0;
 	while (1){
 		int start_ticks = SDL_GetTicks();
 		if (GameHandleEvents(window, states)==MenuExitCode){
@@ -68,12 +69,17 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 			GenerateRandomPotion(states);
 		UpdatePotions(dt);
 
+		if ((auto_save_timer+=dt)>=AutoSaveTime){
+			auto_save_timer-=AutoSaveTime;
+			SaveGame(map, username, "assets/saved-game");
+		}
+
 		
 		DrawBackGround(renderer, states, colormixer);
 		DrawPotions(renderer, potions, colormixer, font28);
 		DrawTroops(renderer, troops, colormixer);
 		DrawStates(renderer, states, colormixer, font28);
-		
+		// todo: a blend line between mouse and selected state
 		
 		char* buffer = malloc(sizeof(char) * 80);
 		sprintf(buffer, "elapsed time: %dms   FPS: %d", start_ticks-begining_of_time, min(FPS, 1000/max(SDL_GetTicks()-start_ticks, 1)));
@@ -84,7 +90,7 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 		
 		SDL_Delay(max(1000/FPS-(SDL_GetTicks()-start_ticks), 0));
 	}
-	// SaveGame(map, "admin", "assets/saved-game");
+	SaveGame(map, "admin", "assets/saved-game");
 	
 	FreeMap(map);
 	TTF_CloseFont(font28);

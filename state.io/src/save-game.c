@@ -1,5 +1,7 @@
 #include "main.h"
 
+const int AutoSaveTime=5000; // every AutoSaveTime miliseconds the game is saved
+
 void SaveGame(struct GameMap *map, char username[32], char *filename){
 	FILE *f=fopen(filename, "wb");
 	// username:

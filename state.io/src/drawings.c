@@ -54,13 +54,14 @@ void PrepareMap(struct GameMap *map){
 	}
 	if (map->states) free(map->states);
 	map->states=(struct State *) malloc(n*sizeof(struct State));
+	memset(map->states, 0, n*sizeof(struct State));
 	for (int i=0; i<n; i++){
 		// assert(ted[i]);
 		map->states[i].x=sumx[i]/ted[i];
 		map->states[i].y=sumy[i]/ted[i];
-		map->states[i].owner=0;
+		// map->states[i].owner=0;
 		map->states[i].cnt=InitialSoldierCount;
-		map->states[i].inq=0;
+		// map->states[i].inq=0;
 	}
 }
 
@@ -95,7 +96,8 @@ void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer 
 			// filledCircleColor(renderer, states[i].x, states[i].y, StateRadius, colormixer->C[states[i].owner]);
 			// circleColor(renderer, states[i].x, states[i].y, StateRadius, colormixer->C[states[i].owner]);
 		}
-		char *text=(char*)malloc(5*sizeof(char));
+		// char *text=(char*)malloc(5*sizeof(char));
+		char text[5]="";
 		sprintf(text, "%d", states[i].cnt);
 		SDL_Color color={0, 0, 0};
 		if (owner) color.r=color.g=color.b=255;
@@ -106,7 +108,7 @@ void DrawStates(SDL_Renderer *renderer, struct State *states, struct ColorMixer 
 		SDL_Rect dest={x-w/2, y-h/2, w, h};
 		SDL_RenderCopy(renderer, text_texture, 0, &dest);
 
-		free(text);
+		// free(text);
 		SDL_FreeSurface(text_surface);
 		SDL_DestroyTexture(text_texture);
 	}

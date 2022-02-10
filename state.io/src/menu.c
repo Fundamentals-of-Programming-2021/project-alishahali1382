@@ -101,7 +101,7 @@ int MainMenu(SDL_Window *window, SDL_Renderer *renderer){
 	SDL_RenderPresent(renderer);
 
 
-	int x, y, res=0;
+	int x=0, y=0, res=0;
 	SDL_Event event;
 	while (!res){
 		if (!SDL_PollEvent(&event)){
@@ -177,7 +177,7 @@ int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer){
 	SDL_RenderPresent(renderer);
 
 
-	int x, y, res=0;
+	int x=0, y=0, res=0;
 	SDL_Event event;
 	while (!res){
 		if (!SDL_PollEvent(&event)){

@@ -16,7 +16,7 @@ struct ColorMixer* ReadColorConfig(char *filename){
 	FILE *f=fopen(filename, "r");
 	if (f==NULL) error("color config file not found :(");
 	
-	struct ColorMixer *res=(struct ColorMixer *)(malloc(sizeof(struct ColorMixer)));
+	struct ColorMixer *res=(struct ColorMixer *) (malloc(sizeof(struct ColorMixer)));
 	res->C=(int*)(malloc(sizeof(int)*(MaxPlayers+1)));
 	res->minC=(int*)(malloc(sizeof(int)*(MaxPlayers+1)));
 	res->maxC=(int*)(malloc(sizeof(int)*(MaxPlayers+1)));

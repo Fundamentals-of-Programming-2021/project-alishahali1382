@@ -87,12 +87,14 @@ int main(){
 		assert(0);
 	}
 	
-
+	if (map.pos) free(map.pos);
+	if (map.states) free(map.states);
 	for (int i=1; i<=8; i++)
 		SDL_DestroyTexture(potion_textures[i]);
 	free(colormixer->C);
 	free(colormixer->minC);
 	free(colormixer->maxC);
+	free(colormixer);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
