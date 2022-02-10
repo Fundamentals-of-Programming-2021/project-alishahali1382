@@ -24,6 +24,7 @@ int main(){
 	map.pos=0;
 	map.states=0;
 
+
 	map.n=12;
 	map.nn=16;
 	map.m=3;
@@ -45,7 +46,6 @@ int main(){
 	char username[32];
 
 	int page=MenuMainMenuCode;
-	// page=MenuNewGameCode;
 	while (1){
 		if (page==MenuExitCode)
 			break ;
@@ -54,8 +54,8 @@ int main(){
 			continue ;
 		}
 		if (page==MenuContinueGameCode){
-			// todo
-			page=MenuExitCode;
+			LoadGame(&map, username, "assets/saved-game");
+			page=MainGameProcess(window, renderer, &map, colormixer, username);
 			continue ;
 		}
 		if (page==MenuNewGameCode){

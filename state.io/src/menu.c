@@ -279,6 +279,10 @@ int ChooseMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *ma
 					char S[70];
 					sprintf(S, "assets/maps/%s", button_text[scroll+i]);
 					LoadMap(map, S);
+					memset(troops, 0, sizeof(troops));
+					memset(attackqueries, 0, sizeof(attackqueries));
+					memset(potions, 0, sizeof(potions));
+					cnttroops=0;
 					res=MenuStartGameCode;
 				}
 			}

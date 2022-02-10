@@ -12,7 +12,6 @@ const int BorderLineWidth=2; // the thickness of the lines seperating states
 int A[Width][Height], B[Width][Height]; // B: temp array for making A
 void PrepareMap(struct GameMap *map){
 	if (!n) error("PrepareMap called with n=0");
-	printf("plase 0 ok\n");
 	int nn=map->nn;
 	int X[nn], Y[nn];
 	for (int i=0; i<nn; i++){
@@ -43,8 +42,6 @@ void PrepareMap(struct GameMap *map){
 			}
 		}
 	}
-	printf("phase 1 ok\n");
-	fflush(stdout);
 	ll sumx[n], sumy[n], ted[n];
 	memset(sumx, 0, sizeof(sumx));
 	memset(sumy, 0, sizeof(sumy));
@@ -54,8 +51,6 @@ void PrepareMap(struct GameMap *map){
 		sumy[A[x][y]]+=y;
 		ted[A[x][y]]++;
 	}
-	printf("phase 2 ok\n");
-	fflush(stdout);
 	if (map->states) free(map->states);
 	map->states=(struct State *) malloc(n*sizeof(struct State));
 	memset(map->states, 0, n*sizeof(struct State));
@@ -63,12 +58,8 @@ void PrepareMap(struct GameMap *map){
 		// assert(ted[i]);
 		map->states[i].x=sumx[i]/ted[i];
 		map->states[i].y=sumy[i]/ted[i];
-		// map->states[i].owner=0;
 		map->states[i].cnt=InitialSoldierCount;
-		// map->states[i].inq=0;
 	}
-	printf("phase 3 ok\n");
-
 }
 
 void DrawBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMixer *colormixer){

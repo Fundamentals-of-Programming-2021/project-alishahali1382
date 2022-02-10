@@ -13,12 +13,6 @@ void SaveGame(struct GameMap *map, char username[32], char *filename){
 	fwrite(map->pos, 4, map->nn, f);
 	// save soldiers:
 	fwrite(&cnttroops, 4, 1, f);
-	// for (int i=0; i<cnttroops; i++){
-	// 	struct Troop *T=troops+i;
-	// 	fwrite(&(T->f), 8, 1, f);
-	// 	fwrite(&(T->owner), 4, 1, f);
-	// 	fwrite(&(T->), 4, 1, f);
-	// }
 	fwrite(troops, sizeof(struct Troop), cnttroops, f);
 	fwrite(attackqueries, sizeof(struct AttackQuery), MAXATTACKQUERIES, f);
 	fwrite(potions, sizeof(struct Potion), MAXPOTIONS, f);
@@ -63,10 +57,11 @@ void LoadGame(struct GameMap *map, char username[32], char *filename){
 	// check the save file a little more
 	for (int i=0; i<MAXATTACKQUERIES; i++){
 		int ok=(attackqueries[i].cnt>=0);
-		ok&=(0<attackqueries[i].owner && attackqueries[i].owner<=MaxPlayers);
-		ok&=(0<=attackqueries[i].X && attackqueries[i].X<n);
-		ok&=(0<=attackqueries[i].Y && attackqueries[i].Y<n);
-		if (!ok) error("invalid save file");
+		if (attackqueries[i].cnt==0) continue ;
+		ok&=(0<attackqueries[i].owner && attackqueries[i].owner<=map->m);
+		ok&=(0<=attackqueries[i].X && attackqueries[i].X<map->n);
+		ok&=(0<=attackqueries[i].Y && attackqueries[i].Y<map->n);
+		if (!ok) error("invalid save file - invalid attack queries");
 	}
 	
 

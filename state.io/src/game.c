@@ -51,13 +51,15 @@ int GameHandleEvents(SDL_Window *window, struct State *states){
 
 int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer, char username[32]){
 	TTF_Font *font28=TTF_OpenFont("assets/IRNazaninBold.ttf", 28);
-	printf("before PrapareMap\n");
-	fflush(0);
+	// printf("before PrapareMap\n");
+	// fflush(0);
 	
 	PrepareMap(map);
 	struct State *states=map->states;
 	for (int i=0; i<m; i++) states[i].owner=i+1, states[i].cnt=InitialSoldierCount;
 	
+	selected_state=-1;
+
 	int begining_of_time = SDL_GetTicks();
 	int last_tick=begining_of_time;
 	int auto_save_timer=0, res=0;
