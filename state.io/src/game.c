@@ -109,7 +109,7 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 		
 		SDL_Delay(max(1000/FPS-(SDL_GetTicks()-start_ticks), 0));
 	}
-	SaveGame(map, "admin", "assets/saved-game");
+	SaveGame(map, username, "assets/saved-game");
 	
 	FreeMap(map);
 	TTF_CloseFont(font28);

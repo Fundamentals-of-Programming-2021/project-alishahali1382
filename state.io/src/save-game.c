@@ -3,9 +3,6 @@
 const int AutoSaveTime=5000; // every AutoSaveTime miliseconds the game is saved
 
 void SaveGame(struct GameMap *map, char username[32], char *filename){
-	// todo: erase this line
-	return ;
-
 	FILE *f=fopen(filename, "wb");
 	// username:
 	fwrite(username, 1, 32, f);
