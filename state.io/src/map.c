@@ -1,11 +1,24 @@
 #include "main.h"
 
 
+void FreeMap(struct GameMap *map){
+	if (map->pos){
+		free(map->pos);
+		map->pos = NULL;
+	}
+	if (map->states){
+		free(map->states);
+		map->states = NULL;
+	}
+}
+
 void GenerateRandomMap(struct GameMap *map){
+	FreeMap(map);
 	n=map->n;
 	m=map->m;
 	int nn=map->nn, tries=0;
 	map->pos=(int*)malloc(nn*sizeof(int));
+	// if (map->pos == NULL) error("can't malloc memory :(");
 	for (int i=0; i<nn; i++){
 		int x=rand2(MinStateDistance/2, Width-MinStateDistance/2);
 		int y=rand2(MinStateDistance/2, Height-MinStateDistance/2);
@@ -23,21 +36,14 @@ void GenerateRandomMap(struct GameMap *map){
 		}
 		map->pos[i]=(x<<16|y);
 	}
-	if (map->states) free(map->states);
 	map->states=(struct State *)malloc(sizeof(struct State)*map->n);
+	// if (map->states == NULL) error("can't malloc memory :(");
 	memset(map->states, 0, n*sizeof(struct State));
 	for (int i=0; i<n; i++)
 		map->states[i].cnt=InitialSoldierCount;
 	for (int i=0; i<m; i++)
 		map->states[i].owner=i+1;
 	
-}
-
-void FreeMap(struct GameMap *map){
-	free(map->pos);
-	free(map->states);
-	map->pos = NULL;
-	map->states = NULL;
 }
 
 void SaveMap(struct GameMap *map, char *filename){
@@ -51,32 +57,25 @@ void SaveMap(struct GameMap *map, char *filename){
 
 void LoadMap(struct GameMap *map, char *filename){
 	FILE *f=fopen(filename, "rb");
-	int tmp=0;
-	tmp+=fread(&(map->n), 4, 1, f);
-	tmp+=fread(&(map->nn), 4, 1, f);
-	tmp+=fread(&(map->m), 4, 1, f);
-	if (tmp<3){
-		char S[70];
-		sprintf(S, "map file %s not valid :(", filename);
-		error(S);
-	}
-	if (map->pos) free(map->pos);
-	map->pos=(int*)malloc(sizeof(int)*map->nn);
-	tmp=fread(map->pos, 4, map->nn, f);
-	if (tmp<map->nn){
-		char S[70];
-		sprintf(S, "map file %s not valid :(", filename);
-		error(S);
-	}
-	fclose(f);
-	// todo: check distance of states too
+	if (f==NULL) error("map file not found :(");
+	
+	FreeMap(map);
 
-	if (map->states) free(map->states);
+	fread(&(map->n), 4, 1, f); n=map->n;
+	fread(&(map->nn), 4, 1, f);
+	fread(&(map->m), 4, 1, f); m=map->m;
+	map->pos=(int*)malloc(sizeof(int)*map->nn);
+	// if (map->pos == NULL) error("can't malloc memory :(");
+	fread(map->pos, 4, map->nn, f);
+	fclose(f);
+	
+
 	map->states=(struct State *)malloc(sizeof(struct State)*map->n);
-	memset(map->states, 0, n*sizeof(struct State));
-	for (int i=0; i<n; i++)
+	// if (map->states == NULL) error("can't malloc memory :(");
+	memset(map->states, 0, map->n*sizeof(struct State));
+	for (int i=0; i<map->n; i++)
 		map->states[i].cnt=InitialSoldierCount;
-	for (int i=0; i<m; i++)
+	for (int i=0; i<map->m; i++)
 		map->states[i].owner=i+1;
 
 }

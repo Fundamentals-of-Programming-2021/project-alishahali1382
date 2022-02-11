@@ -4,7 +4,7 @@ int n, m; // n: number of states    m: number of players
 
 
 
-int selected_state=-1; // -1: no state is selected
+int selected_state; // -1: no state is selected
 
 int GameHandleEvents(SDL_Window *window, struct State *states){
 	SDL_Event event;
@@ -23,7 +23,6 @@ int GameHandleEvents(SDL_Window *window, struct State *states){
 					selected_state=-1;
 					continue ;
 				}
-				// printf("clicked on state %d\n", id);
 				if (selected_state==-1){
 					// todo: in final release, this should be:
 					// if (states[id].owner!=1) continue ; // ignore selecting mutual sides
@@ -51,12 +50,15 @@ int GameHandleEvents(SDL_Window *window, struct State *states){
 
 int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, struct ColorMixer *colormixer, char username[32]){
 	TTF_Font *font28=TTF_OpenFont("assets/IRNazaninBold.ttf", 28);
-	
+	n=map->n;
+	m=map->m;
 	PrepareMap(map);
 	struct State *states=map->states;
 	for (int i=0; i<m; i++) states[i].owner=i+1, states[i].cnt=InitialSoldierCount;
 	
 	selected_state=-1;
+	
+
 
 	int begining_of_time = SDL_GetTicks();
 	int last_tick=begining_of_time;
@@ -66,6 +68,7 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 		if (res=GameHandleEvents(window, states)){
 			break ;
 		}
+		
 
 		int dt=SDL_GetTicks()-last_tick;
 		last_tick+=dt;
@@ -77,6 +80,7 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 		if (rand()%(FPS*PotionSpawnDelay)==0)
 			GenerateRandomPotion(states);
 		UpdatePotions(dt);
+
 
 		// todo: check for win/lose here
 

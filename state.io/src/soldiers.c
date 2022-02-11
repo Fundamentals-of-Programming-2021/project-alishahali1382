@@ -1,15 +1,14 @@
 #include "main.h"
 
 const int MaxParallelTroops=5;
-const int TroopDelayTime=900; // how long until the next wave of troops get deployed
-const double TroopPerSecond=0.72; // number of soldiers generated in normal state per second
+const int TroopDelayTime=700; // how long until the next wave of troops get deployed
+const double TroopPerSecond=0.85; // number of soldiers generated in normal state per second
 
 
 int cnttroops;
 struct Troop troops[MAXTROOPS];
 
 void MoveTroop(struct State *states, struct Troop *T, int dt){ // dt: delta-time in miliseconds
-	// printf("shit1\n");
 	// if speed-potion was active change zarib
 	int owner=T->owner;
 	double zarib=1;
@@ -18,17 +17,13 @@ void MoveTroop(struct State *states, struct Troop *T, int dt){ // dt: delta-time
 		if (active_potion[i]==3) zarib=0;
 		if (active_potion[i]==4) zarib*=potionconfig_y;
 	}
-	// printf("shit2\n");
 	double dx=states[T->S2].x - states[T->S1].x;
-	// printf("shit3\n");
 	double dy=states[T->S2].y - states[T->S1].y;
 	double dist=hypot(dx, dy);
 	
 	double tmp=zarib*SoldierSpeed*dt/dist/1000;
 	dx=dx*tmp;
 	dy=dy*tmp;
-
-	// printf("%.3f  %.3f  %.3f\n", tmp, dx, dy);
 
 	T->x+=dx;
 	T->y+=dy;
@@ -94,12 +89,10 @@ void ProcessTroops(struct State *states, int dt){
 
 void DeployTroop(struct State *states, int X, int Y, int ted){ // sends ted troops from X-->Y
 	double x=states[X].x, y=states[X].y;
-	// printf("x0=%f   y0=%f\n", x, y);
 	double dx=states[Y].x - x, dy=states[Y].y - y;
 	double dist=hypot(dx, dy);
 	dx=dx/dist, dy=dy/dist;
 	x+=dx*StateRadius, y+=dy*StateRadius;
-	// printf("x1=%f   y1=%f\n", x, y);
 	double ddx=dy, ddy=-dx;
 	x-=ddx*TroopLinesDistance*(ted-1)/2;
 	y-=ddy*TroopLinesDistance*(ted-1)/2;

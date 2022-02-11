@@ -49,7 +49,7 @@ int rgb_to_int(int r, int g, int b);
 int IsPointInRect(SDL_Rect rect, int x, int y);
 void SortStrings(char S[][50], int n);
 
-extern int n, m;
+extern int n, m, selected_state;
 
 struct State{
 	int x, y; // center position

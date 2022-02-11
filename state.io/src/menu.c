@@ -95,7 +95,6 @@ int MainMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 	SDL_Rect button_rect[cnt];
 	char button_text[cnt][20];
 	int tmp=(Height-cnt*ButtonH)/(cnt+1);
-	// printf("tmp=%d\n", tmp);
 
 	strcpy(button_text[0], "Continue Game");
 	strcpy(button_text[1], "New Game");
@@ -135,7 +134,6 @@ int MainMenu(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 			for (int i=0; i<cnt; i++){
 				int f0=IsPointInRect(button_rect[i], x, y);
 				int f1=IsPointInRect(button_rect[i], xx, yy);
-				// printf("i=%d f0=%d f1=%d\n", i, f0, f1);
 				if (f0==f1) continue ;
 				render_flag=1;
 			}
@@ -175,7 +173,6 @@ int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, char username[], TTF
 	SDL_Rect button_rect[cnt];
 	char button_text[cnt][20];
 	int tmp=(Height-cnt*ButtonH)/(cnt+1);
-	// printf("tmp=%d\n", tmp);
 
 	int username_sz=strlen(username);
 	sprintf(button_text[0], "@%s", username);
@@ -228,12 +225,10 @@ int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, char username[], TTF
 				res = MenuMainMenuCode;
 			}
 			if (event.key.keysym.sym == SDLK_BACKSPACE){
-				// printf("backspace pressed  username_sz=%d\n", username_sz);
 				if (username_sz){
 					username[--username_sz]=0;
 					render_flag=1;
 				}
-				// printf("username_sz=%d\n\n", username_sz);
 			}
 		}
 		if (event.type == SDL_TEXTINPUT){
@@ -261,9 +256,6 @@ int NewGameMenu(SDL_Window *window, SDL_Renderer *renderer, char username[], TTF
 			SDL_RenderPresent(renderer);
 			SDL_Delay(100);
 			
-			// printf("rendered!\n");
-			// printf("%s\n\n", button_text[0]);
-
 		}
 	}
 	SDL_StopTextInput();
@@ -288,10 +280,8 @@ int ChooseMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *ma
 	dd=opendir("./assets/maps");
 	if (!dd) error("can't open directory ./assets/maps");
 	while ((dir=readdir(dd))!=NULL && ted<30){
-		// printf("shit1\n");
 		if (dir->d_name[0]=='.') continue ;
 		strcpy(button_text[ted++], dir->d_name);
-		// printf("map-file=%s\n", dir->d_name);
 	}
 	closedir(dd);
 	
@@ -301,7 +291,6 @@ int ChooseMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *ma
 	int cnt=min(6, ted);
 	SDL_Rect button_rect[cnt];
 	int tmp=(Height-cnt*ButtonH)/(cnt+1);
-	// printf("tmp=%d\n", tmp);
 
 
 	for (int i=0; i<cnt; i++) 
@@ -329,10 +318,6 @@ int ChooseMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *ma
 					char S[70];
 					sprintf(S, "assets/maps/%s", button_text[scroll+i]);
 					LoadMap(map, S);
-					memset(troops, 0, sizeof(troops));
-					memset(attackqueries, 0, sizeof(attackqueries));
-					memset(potions, 0, sizeof(potions));
-					cnttroops=0;
 					ResetGame();
 					res=MenuStartGameCode;
 				}
@@ -344,7 +329,6 @@ int ChooseMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *ma
 			for (int i=0; i<cnt; i++){
 				int f0=IsPointInRect(button_rect[i], x, y);
 				int f1=IsPointInRect(button_rect[i], xx, yy);
-				// printf("i=%d f0=%d f1=%d\n", i, f0, f1);
 				if (f0==f1) continue ;
 				f=1;
 				// if (f1) DrawButtonRect(renderer, font, button_rect+i, button_text[scroll+i], ButtonColorSelected);
@@ -417,7 +401,6 @@ int CustomGameMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *m
 	SDL_Rect button_rect[cnt];
 	char button_text[cnt][20];
 	int tmp=(Height-cnt*ButtonH)/(cnt+1);
-	// printf("tmp=%d\n", tmp);
 	
 	strcpy(button_text[0], "Start Game");
 	strcpy(button_text[4], "Back");

@@ -16,14 +16,19 @@ void AI(struct State *states, int dt){
 
 	// todo: add potion
 
+
     const int lim = 7;
     int Mx1=-1, id1=-1;
     int cnt=0;
 	int tedad[m+1];
 	memset(tedad, 0, sizeof(tedad));
-	for(int i=0; i<n; i++){
+	
+
+
+	for (int i=0; i<n; i++){
         int now=states[i].cnt-states[i].inq;
 		tedad[states[i].owner]+=states[i].cnt-states[i].inq;
+
         if (states[i].owner<=1) continue;
         cnt++;
         if (now<lim) continue;
@@ -35,16 +40,16 @@ void AI(struct State *states, int dt){
 	if(id1==-1 || !cnt) return;
 	
     int Mn1=1e9, Id1=-1;
-    for(int i=0; i<n; i++){
+    for (int i=0; i<n; i++){
         int now=states[i].cnt-states[i].inq;
-        if(Id1==-1 || Mn1>now){
+        if (Id1==-1 || Mn1>now){
             Mn1=now;
             Id1=i;
         }
     }
 
 	cnt=0;
-	for(int i=1; i<=m; i++) cnt+=(tedad[i]>0);
+	for (int i=1; i<=m; i++) cnt+=(tedad[i]>0);
 	if (cnt<=1) return ; // game is over!
 
 	int mark = 0;

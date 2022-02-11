@@ -82,7 +82,13 @@ void DrawBackGround(SDL_Renderer *renderer, struct State *states, struct ColorMi
 	for (int y=0; y<Height; y++) for (int x=0; x<Width; x++){
 		if (A[x][y]==-1) *pixel=colormixer->border_line;
 		else if (A[x][y]==n) *pixel=colormixer->blank;
-		else *pixel=color[A[x][y]];
+		else{
+			*pixel=color[A[x][y]];
+			// if (A[x][y]==selected_state){
+			// 	int tmp=*pixel-0xff000000;
+			// 	*pixel=0xff000000 + tmp/2;
+			// }
+		}
 		pixel++;
 	}
 	SDL_Texture *texture=SDL_CreateTextureFromSurface(renderer, surface);
@@ -120,7 +126,6 @@ void WriteStateCounts(SDL_Renderer *renderer, struct State *states, TTF_Font *fo
 		SDL_Rect dest={x-w/2, y-h/2, w, h};
 		SDL_RenderCopy(renderer, text_texture, 0, &dest);
 
-		// free(text);
 		SDL_FreeSurface(text_surface);
 		SDL_DestroyTexture(text_texture);
 	}
