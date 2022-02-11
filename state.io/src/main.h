@@ -168,3 +168,11 @@ int CustomGameMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *m
 int PreviewMapMenu(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *map, TTF_Font *font, struct ColorMixer *colormixer);
 
 
+
+void ReadUsers();
+void UpdateScore(char username[], int delta);
+int WaitOnScreen(int t);
+int ShowLeaderBoard(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font);
+
+
+

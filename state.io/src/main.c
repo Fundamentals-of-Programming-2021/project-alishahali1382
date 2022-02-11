@@ -15,6 +15,7 @@ int main(){
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
 	ReadPotions("assets/potion-config.txt", renderer);
+	ReadUsers();
 
 	struct GameMap map;
 	map.pos=NULL;
@@ -41,7 +42,7 @@ int main(){
 			continue ;
 		}
 		if (page==MenuLeaderboardCode){
-			// todo
+			ShowLeaderBoard(window, renderer, font36);
 			page=MenuExitCode;
 			continue ;
 		}

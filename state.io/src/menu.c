@@ -14,7 +14,6 @@ const int MenuStartGameCode=9;
 const int MenuPreviewMapCode=10;
 
 
-// todo: resize the logo.bmp file
 int DrawLogo(SDL_Window *window, SDL_Renderer *renderer){
 	SDL_Surface *logo_surface=SDL_LoadBMP("assets/images/logo.bmp");
 	if (!logo_surface) error("can't open logo.bmp :(");
