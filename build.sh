@@ -5,5 +5,6 @@ cmake --build .
 rm -r CMakeFiles
 rm cmake_install.cmake
 rm CMakeCache.txt
-mv state ../state
-cp -r assets/ ../assets/
+cd ..
+mv state.io/state state
+cp -r state.io/assets assets
