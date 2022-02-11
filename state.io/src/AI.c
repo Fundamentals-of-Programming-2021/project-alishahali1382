@@ -1,6 +1,6 @@
 #include "main.h"
 
-const int AIAttackCoolDown=3000; // how long should a state wait before another attack
+const int AIAttackCoolDown=4000; // how long should a state wait before another attack
 
 int timer[60];
 int attack_player1_timer=0;
@@ -14,39 +14,57 @@ void AI(struct State *states, int dt){
 	attack_player1_timer+=dt;
 	for (int i=0; i<n; i++) timer[i]+=dt;
 
-	// todo: add potion
+	
+	for (int i=0; i<n; i++) if (timer[i]>=AIAttackCoolDown){
+		if (rand()%5!=0 || !states[i].owner || !states[i].cnt || active_potion[states[i].owner]) continue ;
+		// go for potion:
+		int arr[n], sz=0;
+		for (int j=0; j<n; j++) if (j!=i){
+			int good=0;
+			for (int id=0; id<MAXPOTIONS; id++){
+				if (!potions[id].typ || potions[id].owner) continue ;
+				int x=states[i].x, y=states[i].y;
+				int xx=states[j].x, yy=states[j].y;
+				if (SDL_IntersectRectAndLine(&potions[id].rect, &x, &y, &xx, &yy))
+					good=1;
+			}
+			if (good) arr[sz++]=j;
+		}
+		if (!sz) continue ;
+		AddAttackQuery(states, i, arr[rand()%sz]);
+		timer[i]=0;
+	}
 
-
-    const int lim = 7;
-    int Mx1=-1, id1=-1;
-    int cnt=0;
+	const int lim = 7;
+	int Mx1=-1, id1=-1;
+	int cnt=0;
 	int tedad[m+1];
 	memset(tedad, 0, sizeof(tedad));
 	
 
 
 	for (int i=0; i<n; i++){
-        int now=states[i].cnt-states[i].inq;
+		int now=states[i].cnt-states[i].inq;
 		tedad[states[i].owner]+=states[i].cnt-states[i].inq;
 
-        if (states[i].owner<=1) continue;
-        cnt++;
-        if (now<lim) continue;
-        if (id1==-1 || Mx1<now){
-            Mx1=now;
-            id1=i;
-        }
-    }
+		if (states[i].owner<=1) continue;
+		cnt++;
+		if (now<lim) continue;
+		if (id1==-1 || Mx1<now){
+			Mx1=now;
+			id1=i;
+		}
+	}
 	if(id1==-1 || !cnt) return;
 	
-    int Mn1=1e9, Id1=-1;
-    for (int i=0; i<n; i++){
-        int now=states[i].cnt-states[i].inq;
-        if (Id1==-1 || Mn1>now){
-            Mn1=now;
-            Id1=i;
-        }
-    }
+	int Mn1=1e9, Id1=-1;
+	for (int i=0; i<n; i++){
+		int now=states[i].cnt-states[i].inq;
+		if (Id1==-1 || Mn1>now){
+			Mn1=now;
+			Id1=i;
+		}
+	}
 
 	cnt=0;
 	for (int i=1; i<=m; i++) cnt+=(tedad[i]>0);

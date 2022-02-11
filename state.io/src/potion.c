@@ -23,14 +23,14 @@ void ReadPotions(char *filename, SDL_Renderer *renderer){
 	fclose(f);
 	
 	for (int i=1; i<=8; i++){
-		char S[]="assets/potion0.bmp";
-		S[13]+=i;
+		char S[]="assets/images/potion0.bmp";
+		S[20]+=i;
 		SDL_Surface *image=SDL_LoadBMP(S);
 		if (!image){
 			char error_message[60];
 			sprintf(error_message, "can't load image file %s :(", S);
 			// todo: un-comment
-			// error(error_message);
+			error(error_message);
 			continue ;
 		}
 		potion_textures[i]=SDL_CreateTextureFromSurface(renderer, image);
@@ -97,7 +97,7 @@ void GenerateRandomPotion(struct State *states){
 	// todo: fix this shit
 	while (1){
 		potions[id].typ=rand2(1, 9);
-		if (potions[id].typ!=2 && potions[id].typ!=7 && potions[id].typ!=8) break ;
+		if (potions[id].typ!=2) break ;
 	}
 	potions[id].rect.w=potions[id].rect.h=PotionResolution;
 	potions[id].rect.x=x-PotionResolution/2;
