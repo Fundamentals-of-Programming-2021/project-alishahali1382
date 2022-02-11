@@ -138,5 +138,29 @@ int ShowCredit(SDL_Window *window, SDL_Renderer *renderer){
 	return WaitOnScreen(6500);
 }
 
+int ShowVictory(SDL_Window *window, SDL_Renderer *renderer){
+	SDL_Surface *background_surface=SDL_LoadBMP("assets/images/victory.bmp");
+	if (!background_surface) error("can't open victory.bmp :(");
+	SDL_Texture *background_texture=SDL_CreateTextureFromSurface(renderer, background_surface);
+	SDL_RenderCopy(renderer, background_texture, 0, 0);
+	SDL_FreeSurface(background_surface);
+	SDL_DestroyTexture(background_texture);
+	SDL_RenderPresent(renderer);
+
+	return WaitOnScreen(4500);
+}
+
+int ShowDefeat(SDL_Window *window, SDL_Renderer *renderer){
+	SDL_Surface *background_surface=SDL_LoadBMP("assets/images/defeat.bmp");
+	if (!background_surface) error("can't open defeat.bmp :(");
+	SDL_Texture *background_texture=SDL_CreateTextureFromSurface(renderer, background_surface);
+	SDL_RenderCopy(renderer, background_texture, 0, 0);
+	SDL_FreeSurface(background_surface);
+	SDL_DestroyTexture(background_texture);
+	SDL_RenderPresent(renderer);
+
+	return WaitOnScreen(4500);
+}
+
 
 

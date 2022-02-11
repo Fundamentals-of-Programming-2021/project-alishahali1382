@@ -16,7 +16,7 @@ void AI(struct State *states, int dt){
 
 	
 	for (int i=0; i<n; i++) if (timer[i]>=AIAttackCoolDown){
-		if (rand()%5!=0 || !states[i].owner || !states[i].cnt || active_potion[states[i].owner]) continue ;
+		if (rand()%5!=0 || states[i].owner<=1 || !states[i].cnt || active_potion[states[i].owner]) continue ;
 		// go for potion:
 		int arr[n], sz=0;
 		for (int j=0; j<n; j++) if (j!=i){

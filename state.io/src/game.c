@@ -3,7 +3,7 @@
 int n, m; // n: number of states    m: number of players
 
 
-int GameOver(struct State *states, char username[]){
+int GameOver(SDL_Window *window, SDL_Renderer *renderer, struct State *states, char username[]){
 	int f1=0, f2=0;
 	for (int i=0; i<cnttroops; i++){
 		if (troops[i].owner==1) f1=1;
@@ -17,11 +17,11 @@ int GameOver(struct State *states, char username[]){
 	// f1 = 1: victory
 	// f1 = 0: defeat
 	if (f1){
-		// show smth
+		ShowVictory(window, renderer);
 		UpdateScore(username, +1);
 	}
 	else{
-		// show smth
+		ShowDefeat(window, renderer);
 		UpdateScore(username, -1);
 	}
 	return MenuMainMenuCode;
@@ -103,7 +103,7 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 			GenerateRandomPotion(states);
 		UpdatePotions(dt);
 
-		res=GameOver(states, username);
+		res=GameOver(window, renderer, states, username);
 
 		if (selected_state!=-1 && states[selected_state].owner!=1) selected_state=-1;
 
