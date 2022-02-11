@@ -173,6 +173,7 @@ void ReadUsers();
 void UpdateScore(char username[], int delta);
 int WaitOnScreen(int t);
 int ShowLeaderBoard(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font);
+int ShowCredit(SDL_Window *window, SDL_Renderer *renderer);
 
 
 

@@ -66,12 +66,12 @@ int WaitOnScreen(int t){
 				return MenuExitCode;
 			
 			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
-				return MenuNewGameCode;
+				return MenuMainMenuCode;
 
 		}
 		SDL_Delay(100);
 	}
-	return 0;
+	return MenuMainMenuCode;
 }
 
 int ShowLeaderBoard(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
@@ -91,7 +91,7 @@ int ShowLeaderBoard(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 				SDL_Texture *text_texture=SDL_CreateTextureFromSurface(renderer, text_surface);
 				int w=text_surface->w, h=text_surface->h;
 				
-				SDL_Rect dest={250, 120+83*i, w, h};
+				SDL_Rect dest={250, 115+82*i, w, h};
 				SDL_RenderCopy(renderer, text_texture, 0, &dest);
 
 				SDL_FreeSurface(text_surface);
@@ -104,7 +104,7 @@ int ShowLeaderBoard(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 				SDL_Texture *text_texture=SDL_CreateTextureFromSurface(renderer, text_surface);
 				int w=text_surface->w, h=text_surface->h;
 				
-				SDL_Rect dest={800, 120+83*i, w, h};
+				SDL_Rect dest={800, 115+82*i, w, h};
 				SDL_RenderCopy(renderer, text_texture, 0, &dest);
 
 				SDL_FreeSurface(text_surface);
@@ -113,6 +113,18 @@ int ShowLeaderBoard(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
 	}
 	SDL_RenderPresent(renderer);
 	return WaitOnScreen(10000000);
+}
+
+int ShowCredit(SDL_Window *window, SDL_Renderer *renderer){
+	SDL_Surface *background_surface=SDL_LoadBMP("assets/images/too.bmp");
+	if (!background_surface) error("can't open too.bmp :(");
+	SDL_Texture *background_texture=SDL_CreateTextureFromSurface(renderer, background_surface);
+	SDL_RenderCopy(renderer, background_texture, 0, 0);
+	SDL_FreeSurface(background_surface);
+	SDL_DestroyTexture(background_texture);
+	SDL_RenderPresent(renderer);
+
+	return WaitOnScreen(6500);
 }
 
 

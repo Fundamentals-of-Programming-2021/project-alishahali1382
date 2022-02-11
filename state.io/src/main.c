@@ -42,13 +42,11 @@ int main(){
 			continue ;
 		}
 		if (page==MenuLeaderboardCode){
-			ShowLeaderBoard(window, renderer, font36);
-			page=MenuExitCode;
+			page=ShowLeaderBoard(window, renderer, font36);
 			continue ;
 		}
 		if (page==MenuCreditCode){
-			// todo
-			page=MenuExitCode;
+			page=ShowCredit(window, renderer);
 			continue ;
 		}
 		if (page==MenuChooseMapCode){
