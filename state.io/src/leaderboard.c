@@ -20,6 +20,7 @@ int SwapUser(struct User *X, struct User *Y){
 }
 
 void ReadUsers(){
+	memset(users, 0, sizeof(users));
 	FILE *f=fopen("assets/leaderboard.txt", "r");
 	if (f==NULL) error("can't open leaderboard.txt");
 	for (int i=0; i<LeaderBoardRows; i++)
@@ -37,7 +38,13 @@ void WriteUsers(){
 
 void UpdateScore(char username[], int delta){
 	if (!delta) return ; // :)
-	for (int i=0; i<600 && users[i].name[0]; i++){
+	int pos=-1;
+	for (int i=0; i<600; i++){
+		if (!users[i].name[0]){
+			pos=i;
+			break ;
+		}
+		// if (i<10) printf("name[%d]=%s\n", i, users[i].name);
 		if (strcmp(username, users[i].name)) continue ;
 		users[i].score=max(0, users[i].score+delta);
 		if (delta>0){
@@ -47,8 +54,12 @@ void UpdateScore(char username[], int delta){
 			for (int j=i; j+1<600 && SwapUser(users+j, users+j+1); j++) ;
 		}
 		WriteUsers();
+		break ;
 	}
-	error("did you really enter 600 different names?!");
+	if (pos==-1) error("did you really enter 600 different names?!");
+	strcpy(users[pos].name, username);
+	users[pos].score=max(delta, 0);
+	for (int j=pos; j && SwapUser(users+j-1, users+j); j--) ;
 }
 
 void SortUsers(){
