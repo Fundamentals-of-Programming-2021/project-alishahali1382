@@ -25,8 +25,8 @@ int GameHandleEvents(SDL_Window *window, struct State *states){
 				}
 				if (selected_state==-1){
 					// todo: in final release, this should be:
-					// if (states[id].owner!=1) continue ; // ignore selecting mutual sides
-					if (!states[id].owner) continue ; // ignore selecting mutual sides
+					if (states[id].owner!=1) continue ; // ignore selecting mutual sides
+					// if (!states[id].owner) continue ; // ignore selecting mutual sides
 					selected_state=id;
 				}
 				else if (selected_state!=id){
@@ -54,7 +54,6 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 	m=map->m;
 	PrepareMap(map);
 	struct State *states=map->states;
-	for (int i=0; i<m; i++) states[i].owner=i+1, states[i].cnt=InitialSoldierCount;
 	
 	selected_state=-1;
 	
@@ -68,7 +67,6 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 		if (res=GameHandleEvents(window, states)){
 			break ;
 		}
-		
 
 		int dt=SDL_GetTicks()-last_tick;
 		last_tick+=dt;
@@ -85,19 +83,24 @@ int MainGameProcess(SDL_Window *window, SDL_Renderer *renderer, struct GameMap *
 		// todo: check for win/lose here
 
 
+		if (selected_state!=-1 && states[selected_state].owner!=1) selected_state=-1;
 
 		if ((auto_save_timer+=dt)>=AutoSaveTime){
 			auto_save_timer-=AutoSaveTime;
 			SaveGame(map, username, "assets/saved-game");
 		}
 
-		
+
 		DrawBackGround(renderer, states, colormixer);
 		DrawPotions(renderer, potions, colormixer, font28);
 		DrawStates(renderer, states, colormixer);
 		DrawTroops(renderer, troops, colormixer);
 		WriteStateCounts(renderer, states, font28);
-		// todo: a blend line between mouse and selected state
+		if (selected_state!=-1){
+			int mousex, mousey;
+			SDL_GetMouseState(&mousex, &mousey);
+			thickLineColor(renderer, states[selected_state].x, states[selected_state].y, mousex, mousey, 10, 0x60ff5049);
+		}
 		
 		char buffer[100];
 		sprintf(buffer, "elapsed time: %dms   FPS: %d", start_ticks-begining_of_time, min(FPS, 1000/max(SDL_GetTicks()-start_ticks, 1)));

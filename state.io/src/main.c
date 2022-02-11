@@ -20,16 +20,7 @@ int main(){
 	map.pos=NULL;
 	map.states=NULL;
 
-
-	// map.n=12;
-	// map.nn=16;
-	// map.m=3;
-	// GenerateRandomMap(&map);
-	// SaveMap(&map, "assets/maps/map7");
-	// LoadMap(&map, "assets/maps/map1");
-
 	char username[32]="admin";
-	
 	
 	int page=MenuMainMenuCode;
 	// page=MenuNewGameCode;

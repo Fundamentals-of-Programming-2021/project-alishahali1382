@@ -3,7 +3,7 @@ border-line: 245,245,245
 
 empty-state: 163,163,163
 
-player1: 50,105, 140
+player1: 50,105,140
 player1-min: 170,220,255
 player1-max: 75,180,255
 
